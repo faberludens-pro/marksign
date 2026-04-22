@@ -496,11 +496,12 @@ class MarkSignWindow:
         self._poll_ui_queue()
 
         # Drag-and-drop (optional — needs tkdnd)
-        try:
-            self.root.drop_target_register("DND_Files")
-            self.root.dnd_bind("<<Drop>>", self._on_drop)
-        except Exception:
-            pass
+        for _dnd_target in (self.root, self._content):
+            try:
+                _dnd_target.drop_target_register("DND_Files")
+                _dnd_target.dnd_bind("<<Drop>>", self._on_drop)
+            except Exception:
+                pass
 
     def show(self):
         if self.root is None:
