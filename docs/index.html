@@ -182,6 +182,37 @@
     }
     .case p { font-family: var(--sans); font-size: 0.8rem; color: var(--ink-3); line-height: 1.6; }
 
+    /* ── How it works ── */
+    .how-it-works {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+    }
+    @media (max-width: 640px) {
+      .how-it-works { grid-template-columns: 1fr; }
+    }
+    .hiw-panel--image img {
+      width: 100%; max-width: 320px;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      display: block; margin: 0 auto;
+    }
+    .hiw-panel--text {
+      display: flex; flex-direction: column; gap: 2rem;
+    }
+    .hiw-feature {
+      display: flex; gap: 1rem; align-items: flex-start;
+    }
+    .hiw-feature .case-icon { font-size: 1.4rem; line-height: 1; flex-shrink: 0; margin-top: 0.1rem; }
+    .hiw-feature h3 {
+      font-family: var(--serif); font-size: var(--step-0); font-weight: 400;
+      margin-bottom: 0.35rem; color: var(--ink);
+    }
+    .hiw-feature p { font-family: var(--sans); font-size: 0.85rem; color: var(--ink-3); line-height: 1.65; }
+    .hiw-feature p em { font-style: italic; color: var(--ink-2); }
+
     /* ── Formats ── */
     .formats { margin-top: 1.75rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
     .fmt {
@@ -318,7 +349,7 @@
       <p class="eyebrow">What it does</p>
       <h2>Your documents, in the format that matters</h2>
       <p class="body-copy">
-        PDF, Word, ePub, PowerPoint, HTML, images — MarkSign converts them all to clean, structured Markdown using a local pipeline built on docling, PyMuPDF, and MarkItDown. No cloud. No subscription. No copy-paste. The converted file appears next to the original, ready to use.
+        PDF, Word, ePub, PowerPoint, Excel, and RTF — MarkSign converts them all to clean, structured Markdown using a local pipeline built on docling, PyMuPDF, and MarkItDown. No cloud. No subscription. No copy-paste. The converted file appears next to the original, ready to use.
       </p>
 
       <div class="before-after">
@@ -330,6 +361,44 @@
           <p class="ba-label"><span>→</span> Converted Markdown</p>
           <img src="after-conversion.png" alt="Converted Markdown in MarkSign Preview">
         </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- How it works -->
+  <section>
+    <div class="wrap">
+      <p class="eyebrow">How it works</p>
+      <h2>Fits into how you already work</h2>
+
+      <div class="how-it-works">
+        <div class="hiw-panel hiw-panel--image">
+          <img src="contextual-menu.png" alt="Finder contextual menu showing Convert with MarkSign option highlighted">
+        </div>
+        <div class="hiw-panel hiw-panel--text">
+          <div class="hiw-feature">
+            <div class="case-icon">🖱</div>
+            <div>
+              <h3>Right-click to convert</h3>
+              <p>Select one or more files in Finder, right-click, and choose <em>Convert with MarkSign</em>. Batch conversion with no window required.</p>
+            </div>
+          </div>
+          <div class="hiw-feature">
+            <div class="case-icon">⬇︎</div>
+            <div>
+              <h3>Drag and drop</h3>
+              <p>Drop any file onto the MarkSign window and the Markdown file appears next to the original — named, dated, and ready to use.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="privacy-block" style="margin-top: 2rem;">
+        <strong>Always in your menu bar</strong>
+        MarkSign runs quietly in the Mac menu bar — no Dock icon, no distractions. One click opens the converter or brings up your recent conversions, from wherever you are.
+        <img src="menu-bar.png" alt="MarkSign icon in the Mac menu bar" style="display:block;margin-top:1rem;border-radius:6px;max-width:100%;box-shadow:0 2px 10px rgba(0,0,0,0.12);">
       </div>
     </div>
   </section>
@@ -376,8 +445,8 @@
         <span class="fmt">.docx</span>
         <span class="fmt">.epub</span>
         <span class="fmt">.pptx</span>
-        <span class="fmt">.html</span>
-        <span class="fmt">images</span>
+        <span class="fmt">.xlsx</span>
+        <span class="fmt">.rtf</span>
       </div>
 
       <div class="privacy-block">
@@ -424,6 +493,10 @@
         <div class="rm done">
           <div class="rm-dot done"></div>
           Mac App — local conversion, alpha
+        </div>
+        <div class="rm done">
+          <div class="rm-dot done"></div>
+          Finder Quick Action — right-click to convert from any folder
         </div>
         <div class="rm soon">
           <div class="rm-dot soon"></div>
