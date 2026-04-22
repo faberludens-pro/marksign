@@ -10,6 +10,7 @@
   <meta property="og:description" content="Local, private, free during alpha. macOS app.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://faberludens-pro.github.io/marksign">
+  <meta property="og:image" content="https://faberludens-pro.github.io/marksign/screenshot-done.png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,7 +20,6 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      /* Colors — faberludens.pro palette */
       --bg:        #f6f4f1;
       --bg-2:      #eceae6;
       --rule:      rgba(0, 0, 0, 0.09);
@@ -30,175 +30,109 @@
       --orange-bg: rgba(224, 96, 26, 0.07);
       --orange-bd: rgba(224, 96, 26, 0.22);
 
-      /* Type scale — Perfect Fourth (1.333) from canon-for-web */
-      --ratio:  1.333;
       --step-0: clamp(1rem,    1.34vw, 1.25rem);
       --step-1: clamp(1.333rem,1.79vw, 1.666rem);
       --step-2: clamp(1.777rem,2.38vw, 2.221rem);
       --step-3: clamp(2.369rem,3.18vw, 2.961rem);
       --step-4: clamp(3.158rem,4.23vw, 3.948rem);
 
-      /* Serif stack — canon-for-web */
       --serif: 'Iowan Old Style', 'Apple Garamond', Baskerville,
                'Baskerville Old Face', 'Hoefler Text', Garamond,
                'Times New Roman', serif;
-
-      /* Sans — Manrope for labels and UI */
       --sans: 'Manrope', system-ui, sans-serif;
     }
 
-    html {
-      font-size: var(--step-0);
-      line-height: 1.55;
-      scroll-behavior: smooth;
-      -webkit-font-smoothing: antialiased;
-    }
+    html { font-size: var(--step-0); line-height: 1.55; scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+    body { background: var(--bg); color: var(--ink); font-family: var(--serif); }
 
-    body {
-      background: var(--bg);
-      color: var(--ink);
-      font-family: var(--serif);
-    }
-
-    /* ── Layout ── */
-    .wrap {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 0 1.5rem;
-    }
-    .wrap--narrow {
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 0 1.5rem;
-    }
+    .wrap        { max-width: 780px; margin: 0 auto; padding: 0 1.75rem; }
+    .wrap--narrow{ max-width: 580px; margin: 0 auto; padding: 0 1.75rem; }
 
     /* ── Header ── */
-    header {
-      padding: 1.5rem 0;
-      border-bottom: 1px solid var(--rule);
-    }
-    header .wrap {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
+    header { padding: 1.4rem 0; border-bottom: 1px solid var(--rule); }
+    header .wrap { display: flex; align-items: center; justify-content: space-between; }
     .site-name {
-      font-family: var(--sans);
-      font-size: 0.95rem;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      text-decoration: none;
-      color: var(--ink);
+      display: flex; align-items: center; gap: 0.6rem;
+      font-family: var(--sans); font-size: 0.95rem; font-weight: 700;
+      text-decoration: none; color: var(--ink);
     }
+    .site-name img { width: 24px; height: 24px; border-radius: 5px; object-fit: cover; }
     .badge {
-      font-family: var(--sans);
-      font-size: 0.6rem;
-      font-weight: 700;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--orange);
-      border: 1px solid var(--orange-bd);
-      background: var(--orange-bg);
-      padding: 0.25em 0.65em;
-      border-radius: 2px;
+      font-family: var(--sans); font-size: 0.6rem; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase; color: var(--orange);
+      border: 1px solid var(--orange-bd); background: var(--orange-bg);
+      padding: 0.25em 0.65em; border-radius: 2px;
     }
 
     /* ── Hero ── */
-    .hero {
-      padding: 5rem 0 3.5rem;
-      text-align: center;
-    }
+    .hero { padding: 5.5rem 0 3rem; text-align: center; }
     .hero h1 {
-      font-family: var(--serif);
-      font-size: var(--step-4);
-      font-weight: 400;
-      line-height: 1.08;
-      letter-spacing: -0.02em;
-      color: var(--ink);
-      margin-bottom: 1.25rem;
+      font-family: var(--serif); font-size: var(--step-4); font-weight: 400;
+      line-height: 1.08; letter-spacing: -0.02em; margin-bottom: 1.2rem;
     }
-    .hero h1 em {
-      font-style: italic;
-      color: var(--orange);
-    }
+    .hero h1 em { font-style: italic; color: var(--orange); }
     .hero p.lead {
-      font-family: var(--serif);
-      font-size: var(--step-1);
-      color: var(--ink-2);
-      max-width: 520px;
-      margin: 0 auto 2.5rem;
-      line-height: 1.6;
-      font-weight: 400;
+      font-family: var(--serif); font-size: var(--step-1); color: var(--ink-2);
+      max-width: 500px; margin: 0 auto 2.5rem; line-height: 1.6;
     }
-
     .btn-dl {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.6rem;
-      font-family: var(--sans);
-      font-size: 1rem;
-      font-weight: 700;
-      text-decoration: none;
-      color: #fff;
-      background: var(--orange);
-      padding: 0.85rem 2.2rem;
-      border-radius: 4px;
-      transition: background 0.15s;
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      font-family: var(--sans); font-size: 1rem; font-weight: 700;
+      text-decoration: none; color: #fff; background: var(--orange);
+      padding: 0.9rem 2.4rem; border-radius: 4px; transition: background 0.15s;
     }
     .btn-dl:hover { background: #c05016; }
-
     .req {
-      margin-top: 1rem;
-      font-family: var(--sans);
-      font-size: 0.72rem;
-      color: var(--ink-3);
-      letter-spacing: 0.02em;
+      margin-top: 0.9rem; font-family: var(--sans); font-size: 0.72rem;
+      color: var(--ink-3); letter-spacing: 0.02em;
     }
 
-    /* ── Product image ── */
-    .product-img {
-      margin: 3.5rem 0;
-      border-top: 1px solid var(--rule);
-      border-bottom: 1px solid var(--rule);
-      padding: 3.5rem 0;
-      background: var(--bg-2);
+    /* ── Hero screenshot ── */
+    .hero-img {
+      margin: 3.5rem auto 0;
+      max-width: 720px;
+      padding: 0 1.75rem;
     }
-    .product-img .wrap {
-      text-align: center;
+    .hero-img img {
+      width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,.06), 0 12px 48px rgba(0,0,0,.14);
     }
-    .product-img img {
-      max-width: 100%;
-      border-radius: 6px;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.14);
-    }
+
+    /* ── Divider ── */
+    .divider { border: none; border-top: 1px solid var(--rule); margin: 0; }
 
     /* ── Sections ── */
-    section {
-      padding: 4rem 0;
-      border-top: 1px solid var(--rule);
-    }
+    section { padding: 4rem 0; }
     .eyebrow {
-      font-family: var(--sans);
-      font-size: 0.65rem;
-      font-weight: 700;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--orange);
-      margin-bottom: 0.8rem;
+      font-family: var(--sans); font-size: 0.64rem; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase; color: var(--orange);
+      margin-bottom: 0.75rem;
     }
     h2 {
-      font-family: var(--serif);
-      font-size: var(--step-2);
-      font-weight: 400;
-      line-height: 1.2;
-      letter-spacing: -0.01em;
-      margin-bottom: 1rem;
+      font-family: var(--serif); font-size: var(--step-2); font-weight: 400;
+      line-height: 1.18; letter-spacing: -0.01em; margin-bottom: 0.9rem;
     }
-    .body-copy {
-      font-size: var(--step-0);
-      color: var(--ink-2);
-      line-height: 1.75;
-      max-width: 58ch;
+    .body-copy { font-size: var(--step-0); color: var(--ink-2); line-height: 1.78; max-width: 58ch; }
+
+    /* ── Before/after ── */
+    .before-after {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+    @media (max-width: 560px) { .before-after { grid-template-columns: 1fr; } }
+    .ba-panel { display: flex; flex-direction: column; gap: 0.6rem; }
+    .ba-label {
+      font-family: var(--sans); font-size: 0.7rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3);
+    }
+    .ba-label span { color: var(--orange); margin-right: 0.4em; }
+    .ba-panel img {
+      width: 100%; border-radius: 8px;
+      border: 1px solid var(--rule);
+      box-shadow: 0 4px 20px rgba(0,0,0,.1);
     }
 
     /* ── Use cases ── */
@@ -206,110 +140,56 @@
       margin-top: 2.5rem;
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-      gap: 1px;
-      background: var(--rule);
-      border: 1px solid var(--rule);
-      border-radius: 4px;
-      overflow: hidden;
+      gap: 1px; background: var(--rule);
+      border: 1px solid var(--rule); border-radius: 4px; overflow: hidden;
     }
-    .case {
-      background: var(--bg);
-      padding: 1.5rem 1.4rem;
-    }
-    .case-icon {
-      font-size: 1.5rem;
-      margin-bottom: 0.75rem;
-      line-height: 1;
-    }
+    .case { background: var(--bg); padding: 1.5rem 1.4rem; }
+    .case-icon { font-size: 1.4rem; margin-bottom: 0.7rem; line-height: 1; }
     .case h3 {
-      font-family: var(--serif);
-      font-size: var(--step-0);
-      font-weight: 400;
-      margin-bottom: 0.5rem;
-      color: var(--ink);
+      font-family: var(--serif); font-size: var(--step-0); font-weight: 400;
+      margin-bottom: 0.45rem; color: var(--ink);
     }
-    .case p {
-      font-family: var(--sans);
-      font-size: 0.82rem;
-      color: var(--ink-3);
-      line-height: 1.6;
-    }
+    .case p { font-family: var(--sans); font-size: 0.8rem; color: var(--ink-3); line-height: 1.6; }
 
     /* ── Formats ── */
-    .formats {
-      margin-top: 2rem;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
+    .formats { margin-top: 1.75rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
     .fmt {
-      font-family: var(--sans);
-      font-size: 0.78rem;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      color: var(--orange);
-      background: var(--orange-bg);
-      border: 1px solid var(--orange-bd);
-      padding: 0.35em 0.75em;
-      border-radius: 3px;
+      font-family: var(--sans); font-size: 0.78rem; font-weight: 600;
+      letter-spacing: 0.04em; color: var(--orange);
+      background: var(--orange-bg); border: 1px solid var(--orange-bd);
+      padding: 0.35em 0.75em; border-radius: 3px;
     }
 
     /* ── Privacy ── */
     .privacy-block {
-      margin-top: 2rem;
-      padding: 1.25rem 1.5rem;
-      background: var(--bg-2);
-      border-left: 3px solid var(--orange);
+      margin-top: 2rem; padding: 1.2rem 1.5rem;
+      background: var(--bg-2); border-left: 3px solid var(--orange);
       border-radius: 0 4px 4px 0;
-      font-size: 0.9rem;
-      color: var(--ink-2);
-      line-height: 1.7;
+      font-size: 0.9rem; color: var(--ink-2); line-height: 1.7;
     }
-    .privacy-block strong { color: var(--ink); font-family: var(--sans); font-size: 0.82rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+    .privacy-block strong {
+      display: block; margin-bottom: 0.2rem;
+      font-family: var(--sans); font-size: 0.72rem; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink);
+    }
 
     /* ── Feedback ── */
-    .feedback-row {
-      margin-top: 2rem;
-      display: flex;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-    }
+    .feedback-row { margin-top: 2rem; display: flex; gap: 0.75rem; flex-wrap: wrap; }
     .btn-outline {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-family: var(--sans);
-      font-size: 0.85rem;
-      font-weight: 600;
-      text-decoration: none;
-      color: var(--ink);
-      border: 1px solid var(--rule);
-      padding: 0.6rem 1.2rem;
-      border-radius: 4px;
-      transition: border-color 0.15s;
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-family: var(--sans); font-size: 0.85rem; font-weight: 600;
+      text-decoration: none; color: var(--ink);
+      border: 1px solid var(--rule); padding: 0.6rem 1.2rem;
+      border-radius: 4px; transition: border-color 0.15s;
     }
     .btn-outline:hover { border-color: var(--ink-3); }
 
     /* ── Roadmap ── */
-    .roadmap {
-      margin-top: 2rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.8rem;
-    }
-    .rm {
-      display: flex;
-      align-items: baseline;
-      gap: 0.9rem;
-      font-size: var(--step-0);
-    }
+    .roadmap { margin-top: 2rem; display: flex; flex-direction: column; gap: 0.85rem; }
+    .rm { display: flex; align-items: baseline; gap: 0.9rem; font-size: var(--step-0); }
     .rm-dot {
-      flex-shrink: 0;
-      width: 0.45rem;
-      height: 0.45rem;
-      border-radius: 50%;
-      position: relative;
-      top: -0.05em;
+      flex-shrink: 0; width: 0.45rem; height: 0.45rem;
+      border-radius: 50%; position: relative; top: -0.05em;
     }
     .rm-dot.done { background: var(--orange); }
     .rm-dot.soon { background: transparent; border: 1.5px solid var(--ink-3); }
@@ -317,22 +197,9 @@
     .rm.soon { color: var(--ink-3); }
 
     /* ── Footer ── */
-    footer {
-      border-top: 1px solid var(--rule);
-      padding: 2rem 0;
-    }
-    footer .wrap {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-    footer p {
-      font-family: var(--sans);
-      font-size: 0.78rem;
-      color: var(--ink-3);
-    }
+    footer { border-top: 1px solid var(--rule); padding: 2rem 0; }
+    footer .wrap { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
+    footer p { font-family: var(--sans); font-size: 0.78rem; color: var(--ink-3); }
     footer a { color: var(--ink-2); text-decoration: none; }
     footer a:hover { color: var(--ink); }
   </style>
@@ -341,7 +208,10 @@
 
   <header>
     <div class="wrap">
-      <a class="site-name" href="#">MarkSign</a>
+      <a class="site-name" href="#">
+        <img src="logo.jpg" alt="MarkSign">
+        MarkSign
+      </a>
       <span class="badge">Alpha</span>
     </div>
   </header>
@@ -359,18 +229,13 @@
       </a>
       <p class="req">macOS 13 or later &nbsp;·&nbsp; Apple Silicon &amp; Intel &nbsp;·&nbsp; 96 MB</p>
     </div>
-  </div>
 
-  <!-- Product image -->
-  <div class="product-img">
-    <div class="wrap">
-      <!-- Replace with actual screenshot: docs/screenshot.png -->
-      <!-- <img src="screenshot.png" alt="MarkSign converting a PDF to Markdown"> -->
-      <p style="font-family:var(--sans);font-size:0.8rem;color:var(--ink-3);padding:4rem 0;">
-        [ product screenshot — coming soon ]
-      </p>
+    <div class="hero-img">
+      <img src="screenshot-done.png" alt="MarkSign showing two files converted to Markdown">
     </div>
   </div>
+
+  <hr class="divider">
 
   <!-- What it does -->
   <section>
@@ -380,8 +245,21 @@
       <p class="body-copy">
         PDF, Word, ePub, PowerPoint, HTML, images — MarkSign converts them all to clean, structured Markdown using a local pipeline built on docling, PyMuPDF, and MarkItDown. No cloud. No subscription. No copy-paste. The converted file appears next to the original, ready to use.
       </p>
+
+      <div class="before-after">
+        <div class="ba-panel">
+          <p class="ba-label"><span>→</span> Source document</p>
+          <img src="screenshot-preview-pdf.png" alt="PDF open in Preview">
+        </div>
+        <div class="ba-panel">
+          <p class="ba-label"><span>→</span> Converted Markdown</p>
+          <img src="screenshot-preview.png" alt="Converted Markdown in MarkSign Preview">
+        </div>
+      </div>
     </div>
   </section>
+
+  <hr class="divider">
 
   <!-- Use cases -->
   <section>
@@ -409,7 +287,9 @@
     </div>
   </section>
 
-  <!-- Formats -->
+  <hr class="divider">
+
+  <!-- Formats + Privacy -->
   <section>
     <div class="wrap">
       <p class="eyebrow">Supported formats</p>
@@ -425,12 +305,14 @@
         <span class="fmt">images</span>
       </div>
 
-      <div class="privacy-block" style="margin-top:2rem;">
-        <strong>Private by design</strong><br>
+      <div class="privacy-block">
+        <strong>Private by design</strong>
         Conversion happens entirely on your Mac using open-source tools. Your documents are never uploaded or transmitted. MarkSign has no analytics and requires no account.
       </div>
     </div>
   </section>
+
+  <hr class="divider">
 
   <!-- Feedback -->
   <section>
@@ -451,6 +333,8 @@
       </div>
     </div>
   </section>
+
+  <hr class="divider">
 
   <!-- Roadmap -->
   <section>
