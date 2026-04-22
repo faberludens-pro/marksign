@@ -10,7 +10,7 @@
   <meta property="og:description" content="Local, private, free during alpha. macOS app.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://faberludens-pro.github.io/marksign">
-  <meta property="og:image" content="https://faberludens-pro.github.io/marksign/og-card.png">
+  <meta property="og:image" content="https://faberludens-pro.github.io/marksign/hero.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
 
@@ -72,16 +72,20 @@
     }
 
     /* ── Hero ── */
-    .hero { padding: 5.5rem 0 3rem; text-align: center; }
-    .hero h1 {
-      font-family: var(--serif); font-size: var(--step-4); font-weight: 400;
-      line-height: 1.08; letter-spacing: -0.02em; margin-bottom: 1.2rem;
+    .visually-hidden {
+      position: absolute; width: 1px; height: 1px;
+      overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap;
     }
-    .hero h1 em { font-style: italic; color: var(--orange); }
-    .hero p.lead {
-      font-family: var(--serif); font-size: var(--step-1); color: var(--ink-2);
-      max-width: 500px; margin: 0 auto 2.5rem; line-height: 1.6;
+    .hero { padding: 2.5rem 0 2rem; text-align: center; }
+    .hero-card {
+      max-width: 900px; margin: 0 auto 2rem;
+      padding: 0 1.75rem;
     }
+    .hero-card img {
+      width: 100%; border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08), 0 16px 48px rgba(0,0,0,.12);
+    }
+    .hero-cta { text-align: center; }
     .btn-dl {
       display: inline-flex; align-items: center; gap: 0.6rem;
       font-family: var(--sans); font-size: 1rem; font-weight: 700;
@@ -92,18 +96,6 @@
     .req {
       margin-top: 0.9rem; font-family: var(--sans); font-size: 0.72rem;
       color: var(--ink-3); letter-spacing: 0.02em;
-    }
-
-    /* ── Hero screenshot ── */
-    .hero-img {
-      margin: 3.5rem auto 0;
-      max-width: 720px;
-      padding: 0 1.75rem;
-    }
-    .hero-img img {
-      width: 100%;
-      border-radius: 10px;
-      box-shadow: 0 2px 4px rgba(0,0,0,.06), 0 12px 48px rgba(0,0,0,.14);
     }
 
     /* ── Divider ── */
@@ -225,9 +217,13 @@
 
   <!-- Hero -->
   <div class="hero">
-    <div class="wrap--narrow">
-      <h1>Convert any document<br>to <em>Markdown</em></h1>
-      <p class="lead">Drop a PDF, Word file, ePub, or slide deck. Get clean, structured Markdown in seconds — entirely on your Mac.</p>
+    <h1 class="visually-hidden">Convert any document to Markdown — Clean, structured Markdown for your AI agents, notes apps, and repositories.</h1>
+
+    <div class="hero-card">
+      <img src="hero.png" alt="MarkSign — Convert any document to Markdown. Clean, structured Markdown for your AI agents, notes apps, and repositories.">
+    </div>
+
+    <div class="hero-cta">
       <a class="btn-dl" href="https://github.com/faberludens-pro/marksign/releases/latest/download/MarkSign-1.0.dmg">
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
           <path d="M7.5 1v8.5M4 7l3.5 3.5L11 7M2 13h11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
@@ -235,10 +231,6 @@
         Download Now — Free
       </a>
       <p class="req">macOS 13 or later &nbsp;·&nbsp; Apple Silicon &amp; Intel &nbsp;·&nbsp; 96 MB</p>
-    </div>
-
-    <div class="hero-img">
-      <img src="marksign-converted.png" alt="MarkSign showing two files converted to Markdown">
     </div>
   </div>
 
