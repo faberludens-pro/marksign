@@ -37,6 +37,26 @@ try:
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             try:
+                import sys, os, platform
+                machine = platform.machine()
+                plat = "osx-arm64" if machine == "arm64" else "osx-x64"
+                # In PyInstaller bundle __file__ may not resolve correctly;
+                # manually add tkdnd path from known bundle locations.
+                candidates = []
+                # 1. sys._MEIPASS (PyInstaller onefile or onedir temp)
+                if hasattr(sys, "_MEIPASS"):
+                    candidates.append(os.path.join(sys._MEIPASS, "tkinterdnd2", "tkdnd", plat))
+                # 2. Contents/Resources/ relative to executable (macOS .app bundle)
+                exe_dir = os.path.dirname(sys.executable)
+                resources_dir = os.path.normpath(os.path.join(exe_dir, "..", "Resources"))
+                candidates.append(os.path.join(resources_dir, "tkinterdnd2", "tkdnd", plat))
+                # 3. Fallback: package __file__
+                pkg_dir = os.path.dirname(_TkDnD.__file__)
+                candidates.append(os.path.join(pkg_dir, "tkdnd", plat))
+                for path in candidates:
+                    if os.path.isdir(path):
+                        self.tk.call("lappend", "auto_path", path)
+                        break
                 self.TkdndVersion = _TkDnD._require(self)
             except Exception:
                 pass  # native tkdnd library unavailable — DnD disabled gracefully
@@ -72,10 +92,10 @@ BG_ROW       = "#252525"
 BG_ROW_ALT   = "#222222"
 SEPARATOR    = "#3A3A3A"
 
-FONT_TITLE   = ("SF Pro Text", 13, "bold")
-FONT_BODY    = ("SF Pro Text", 12)
-FONT_SMALL   = ("SF Pro Text", 11)
-FONT_TINY    = ("SF Pro Text", 10)
+FONT_TITLE   = ("SF Pro Text", 14, "bold")
+FONT_BODY    = ("SF Pro Text", 13)
+FONT_SMALL   = ("SF Pro Text", 12)
+FONT_TINY    = ("SF Pro Text", 11)
 
 IPC_PORT     = 57892
 WINDOW_W     = 640
