@@ -25,3 +25,4 @@ markitdown==0.1.5
 
 # Conversion — primary (downloads AI models on first run)
 docling==2.90.0
+tkinterdnd2>=0.4.3

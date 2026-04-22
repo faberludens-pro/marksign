@@ -45,6 +45,9 @@ _HIDDEN = [
     # plistlib / uuid — stdlib, but explicit is safe
     "plistlib",
     "uuid",
+    # drag-and-drop (optional — graceful fallback if missing)
+    "tkinterdnd2",
+    "tkinterdnd2.TkinterDnD",
 ]
 
 _HIDDEN_PREVIEW = [
@@ -91,10 +94,23 @@ try:
 except ImportError:
     _ctk_data = []
 
+try:
+    import tkinterdnd2 as _dnd
+    _dnd_root = Path(_dnd.__file__).parent
+    _dnd_data = [(str(_dnd_root), "tkinterdnd2")]
+    # Native tkdnd library — must be bundled as binary for dlsym to find it
+    import platform
+    _arch = "arm64" if platform.machine() == "arm64" else "x64"
+    _dylib = list((_dnd_root / "tkdnd" / f"osx-{_arch}").glob("*.dylib"))
+    _dnd_bins = [(str(d), f"tkinterdnd2/tkdnd/osx-{_arch}") for d in _dylib]
+except ImportError:
+    _dnd_data = []
+    _dnd_bins = []
+
 _DATAS = [
     (str(root / "logo-marksign.jpg"), "."),
     ("marksign_help.md", "."),
-] + _ctk_data
+] + _ctk_data + _dnd_data
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -104,7 +120,7 @@ _DATAS = [
 a = Analysis(
     ["marksign_app.py"],
     pathex=[str(here)],
-    binaries=[],
+    binaries=_dnd_bins,
     datas=_DATAS,
     hiddenimports=_HIDDEN,
     hookspath=[],

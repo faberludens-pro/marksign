@@ -28,6 +28,22 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
 import customtkinter as ctk
+
+# ── Drag-and-drop support (optional — needs tkinterdnd2) ──────────────────────
+try:
+    from tkinterdnd2 import TkinterDnD as _TkDnD
+
+    class _DnDCTk(ctk.CTk, _TkDnD.DnDWrapper):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            try:
+                self.TkdndVersion = _TkDnD._require(self)
+            except Exception:
+                pass  # native tkdnd library unavailable — DnD disabled gracefully
+
+    _CTkRoot = _DnDCTk
+except Exception:
+    _CTkRoot = ctk.CTk
 from AppKit import (
     NSStatusBar, NSVariableStatusItemLength, NSImage,
     NSMenu, NSMenuItem, NSApplication as _NSApp,
@@ -441,7 +457,7 @@ class MarkSignWindow:
     # ── Build ─────────────────────────────────────────────────────────────────
 
     def build(self):
-        self.root = ctk.CTk()
+        self.root = _CTkRoot()
         self.root.title("MarkSign")
         self.root.update_idletasks()
         sw = self.root.winfo_screenwidth()
