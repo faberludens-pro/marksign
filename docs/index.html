@@ -227,6 +227,49 @@
     .rm.done { color: var(--ink-2); }
     .rm.soon { color: var(--ink-3); }
 
+    /* ── Download modal ── */
+    #dl-modal {
+      border: none; border-radius: 10px; padding: 0;
+      max-width: 420px; width: calc(100% - 2rem);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.22);
+      background: var(--bg);
+    }
+    #dl-modal::backdrop { background: rgba(0,0,0,0.55); backdrop-filter: blur(3px); }
+    .modal-inner { padding: 2.2rem 2rem 2rem; }
+    .modal-inner h3 {
+      font-family: var(--serif); font-size: 1.4rem; font-weight: 400;
+      line-height: 1.2; margin-bottom: 0.4rem; color: var(--ink);
+    }
+    .modal-inner p {
+      font-family: var(--sans); font-size: 0.82rem; color: var(--ink-2);
+      margin-bottom: 1.4rem; line-height: 1.6;
+    }
+    .modal-inner label {
+      display: block; font-family: var(--sans); font-size: 0.72rem;
+      font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--ink-3); margin-bottom: 0.4rem;
+    }
+    .modal-inner input[type="email"] {
+      width: 100%; padding: 0.7rem 0.9rem; border: 1px solid rgba(0,0,0,0.15);
+      border-radius: 4px; font-family: var(--sans); font-size: 0.95rem;
+      color: var(--ink); background: #fff; margin-bottom: 1rem;
+      outline: none; transition: border-color 0.15s;
+    }
+    .modal-inner input[type="email"]:focus { border-color: var(--orange); }
+    .modal-actions { display: flex; gap: 0.75rem; align-items: center; }
+    .btn-submit {
+      flex: 1; display: inline-flex; align-items: center; justify-content: center;
+      gap: 0.5rem; font-family: var(--sans); font-size: 0.95rem; font-weight: 700;
+      color: #fff; background: var(--orange); border: none; cursor: pointer;
+      padding: 0.75rem 1.5rem; border-radius: 4px; transition: background 0.15s;
+    }
+    .btn-submit:hover { background: #c05016; }
+    .btn-cancel {
+      font-family: var(--sans); font-size: 0.82rem; color: var(--ink-3);
+      background: none; border: none; cursor: pointer; padding: 0.5rem;
+    }
+    .btn-cancel:hover { color: var(--ink); }
+
     /* ── Footer ── */
     footer { border-top: 1px solid var(--rule); padding: 2rem 0; }
     footer .wrap { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
@@ -249,12 +292,12 @@
         <div class="hero-rule"></div>
         <p class="hero-sub">Clean, structured Markdown for your AI agents, notes apps, and repositories.</p>
         <div class="hero-cta">
-          <a class="btn-dl" href="https://github.com/faberludens-pro/marksign/releases/latest/download/MarkSign-1.0.dmg">
+          <button class="btn-dl" onclick="document.getElementById('dl-modal').showModal()">
             <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
               <path d="M7.5 1v8.5M4 7l3.5 3.5L11 7M2 13h11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             Download Now — Free
-          </a>
+          </button>
           <p class="req" style="color:rgba(146,141,135,0.8);margin-top:0.75rem;">macOS 13 or later &nbsp;·&nbsp; Apple Silicon &amp; Intel &nbsp;·&nbsp; 96 MB</p>
         </div>
       </div>
@@ -405,6 +448,36 @@
       </p>
     </div>
   </footer>
+
+  <!-- Download modal -->
+  <dialog id="dl-modal" aria-labelledby="modal-title">
+    <div class="modal-inner">
+      <h3 id="modal-title">Get MarkSign for free</h3>
+      <p>Enter your email and we'll send you release notes and updates. Your download starts immediately after.</p>
+      <form method="POST" action="https://formspree.io/f/YOUR_FORM_ID">
+        <input type="hidden" name="_next" value="https://faberludens-pro.github.io/marksign/thank-you.html">
+        <input type="hidden" name="_subject" value="MarkSign download — new lead">
+        <label for="email">Email address</label>
+        <input type="email" id="email" name="email" placeholder="you@example.com" required autocomplete="email">
+        <div class="modal-actions">
+          <button type="submit" class="btn-submit">
+            <svg width="14" height="14" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+              <path d="M7.5 1v8.5M4 7l3.5 3.5L11 7M2 13h11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Download — Free
+          </button>
+          <button type="button" class="btn-cancel" onclick="document.getElementById('dl-modal').close()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <script>
+    // Close modal on backdrop click
+    document.getElementById('dl-modal').addEventListener('click', function(e) {
+      if (e.target === this) this.close();
+    });
+  </script>
 
 </body>
 </html>

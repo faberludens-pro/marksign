@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thank you — MarkSign</title>
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f6f4f1; --ink: #111110; --ink-2: #48443f; --ink-3: #928d87;
+      --orange: #e0601a;
+      --serif: 'Iowan Old Style', 'Apple Garamond', Baskerville, 'Baskerville Old Face', 'Hoefler Text', Garamond, 'Times New Roman', serif;
+      --sans: 'Manrope', system-ui, sans-serif;
+    }
+    html { font-size: 1.05rem; -webkit-font-smoothing: antialiased; }
+    body {
+      background: var(--bg); color: var(--ink); font-family: var(--sans);
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      padding: 2rem;
+    }
+    .card {
+      max-width: 440px; text-align: center;
+    }
+    .icon {
+      width: 56px; height: 56px; margin: 0 auto 1.5rem;
+      background: rgba(224,96,26,0.1); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .icon svg { color: var(--orange); }
+    h1 {
+      font-family: var(--serif); font-size: 1.8rem; font-weight: 400;
+      line-height: 1.2; margin-bottom: 0.75rem;
+    }
+    p { font-size: 0.9rem; color: var(--ink-2); line-height: 1.7; margin-bottom: 1.5rem; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-family: var(--sans); font-size: 0.95rem; font-weight: 700;
+      color: #fff; background: var(--orange); text-decoration: none;
+      padding: 0.8rem 2rem; border-radius: 4px;
+    }
+    .back { display: block; margin-top: 1.25rem; font-size: 0.8rem; color: var(--ink-3); text-decoration: none; }
+    .back:hover { color: var(--ink); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">
+      <svg width="24" height="24" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+        <path d="M7.5 1v8.5M4 7l3.5 3.5L11 7M2 13h11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <h1>Your download is starting</h1>
+    <p>Thank you! MarkSign 1.0 for macOS is downloading now.<br>
+    We'll send you release notes and updates at the email you provided.</p>
+    <a class="btn" href="https://github.com/faberludens-pro/marksign/releases/latest/download/MarkSign-1.0.dmg">
+      <svg width="14" height="14" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+        <path d="M7.5 1v8.5M4 7l3.5 3.5L11 7M2 13h11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Download didn't start? Click here
+    </a>
+    <a class="back" href="https://faberludens-pro.github.io/marksign/">← Back to MarkSign</a>
+  </div>
+
+  <script>
+    // Auto-trigger download
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        window.location.href = 'https://github.com/faberludens-pro/marksign/releases/latest/download/MarkSign-1.0.dmg';
+      }, 800);
+    });
+  </script>
+</body>
+</html>
