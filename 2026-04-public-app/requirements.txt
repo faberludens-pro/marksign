@@ -1,0 +1,27 @@
+# MarkSign public app — venv dependencies
+# Install with: pip install -r requirements.txt
+# Note: docling will trigger a large first-run model download (~1–2 GB)
+
+# UI
+customtkinter==5.2.2
+darkdetect==0.8.0
+pystray==0.19.5
+pillow==12.2.0
+
+# macOS integration
+pyobjc-core==12.1
+pyobjc-framework-Cocoa==12.1
+pyobjc-framework-Quartz==12.1
+pyobjc-framework-WebKit==12.1
+
+# Preview companion
+markdown-it-py==3.0.0
+Pygments==2.19.1
+watchdog==6.0.0
+
+# Conversion — fast local converters
+PyMuPDF==1.27.2.2
+markitdown==0.1.5
+
+# Conversion — primary (downloads AI models on first run)
+docling==2.90.0

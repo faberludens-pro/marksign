@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Local Markdown Editor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+  <style>
+    :root, [data-theme="light"] {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2rem);
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+      --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
+      --space-12: 3rem; --space-16: 4rem;
+      --color-bg: #f7f6f2; --color-surface: #fbfaf7; --color-surface-2: #f2f0eb;
+      --color-surface-offset: #ece9e2; --color-border: #d7d2c8; --color-divider: #dfdad0;
+      --color-text: #28251d; --color-text-muted: #6f6b64; --color-text-faint: #aaa59d;
+      --color-text-inverse: #f9f8f4; --color-primary: #01696f; --color-primary-hover: #0c4e54;
+      --color-primary-highlight: #dcebea; --color-success: #437a22; --color-warning: #964219;
+      --color-error: #a13544; --shadow-sm: 0 1px 2px rgba(40,37,29,.06);
+      --shadow-md: 0 10px 30px rgba(40,37,29,.09); --radius-sm: 0.375rem; --radius-md: 0.75rem;
+      --radius-lg: 1rem; --radius-xl: 1.25rem; --font-body: 'Instrument Sans', system-ui, sans-serif;
+      --font-display: 'Source Serif 4', Georgia, serif; --transition: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    [data-theme="dark"] {
+      --color-bg: #171614; --color-surface: #1d1c1a; --color-surface-2: #23211f;
+      --color-surface-offset: #2b2926; --color-border: #3a3732; --color-divider: #302e2b;
+      --color-text: #d4d0c9; --color-text-muted: #96918a; --color-text-faint: #68635d;
+      --color-text-inverse: #191815; --color-primary: #58a1a7; --color-primary-hover: #76b6bc;
+      --color-primary-highlight: #243436; --color-success: #79b356; --color-warning: #cf8954;
+      --color-error: #d26a79; --shadow-sm: 0 1px 2px rgba(0,0,0,.25); --shadow-md: 0 10px 30px rgba(0,0,0,.35);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+    body{min-height:100dvh;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body);font-size:var(--text-base);line-height:1.55}
+    button,input,textarea{font:inherit;color:inherit}
+    button{cursor:pointer;border:none;background:none}
+    textarea{resize:none}
+    a{color:inherit}
+    img,svg{display:block;max-width:100%}
+    :focus-visible{outline:2px solid var(--color-primary);outline-offset:3px;border-radius:var(--radius-sm)}
+    .app{display:grid;grid-template-rows:auto auto 1fr auto;min-height:100dvh}
+    .topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);padding:var(--space-4) var(--space-5);background:color-mix(in srgb,var(--color-bg) 86%, transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--color-divider)}
+    .brand{display:flex;align-items:center;gap:var(--space-3);min-width:0}
+    .logo{width:1.9rem;height:1.9rem;padding:0.35rem;border-radius:0.6rem;background:var(--color-primary-highlight);color:var(--color-primary)}
+    .brand-copy{min-width:0}
+    .brand-copy h1{font-family:var(--font-display);font-size:var(--text-lg);line-height:1.1}
+    .brand-copy p{font-size:var(--text-xs);color:var(--color-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:44vw}
+    .toolbar,.toolbar-secondary{display:flex;gap:var(--space-2);align-items:center;flex-wrap:wrap}
+    .toolbar-wrap{display:flex;align-items:center;gap:var(--space-3);justify-content:space-between;padding:var(--space-3) var(--space-5);border-bottom:1px solid var(--color-divider);background:var(--color-surface)}
+    .btn{display:inline-flex;align-items:center;gap:var(--space-2);height:2.5rem;padding:0 var(--space-4);border:1px solid var(--color-border);border-radius:999px;background:var(--color-surface-2);transition:all var(--transition);box-shadow:var(--shadow-sm)}
+    .btn:hover{border-color:color-mix(in srgb,var(--color-primary) 30%, var(--color-border));transform:translateY(-1px)}
+    .btn-primary{background:var(--color-primary);color:var(--color-text-inverse);border-color:transparent}
+    .btn-primary:hover{background:var(--color-primary-hover)}
+    .btn-ghost{background:transparent;box-shadow:none}
+    .btn[disabled]{opacity:.45;cursor:not-allowed;transform:none}
+    .statusbar{display:grid;grid-template-columns:1fr auto auto auto;gap:var(--space-4);padding:var(--space-3) var(--space-5);background:var(--color-surface);border-top:1px solid var(--color-divider);font-size:var(--text-xs);color:var(--color-text-muted)}
+    .workspace{display:grid;grid-template-columns:minmax(320px,1.08fr) 10px minmax(320px,0.92fr);min-height:0}
+    .panel{min-height:0;background:var(--color-surface)}
+    .panel-head{display:flex;justify-content:space-between;align-items:center;padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--color-divider);background:var(--color-surface)}
+    .panel-head strong{font-size:var(--text-sm)}
+    .editor-wrap{height:100%;padding:var(--space-4)}
+    #editor{width:100%;height:100%;min-height:40dvh;border:1px solid var(--color-border);border-radius:var(--radius-lg);background:var(--color-bg);padding:var(--space-5);color:var(--color-text);box-shadow:inset 0 1px 0 rgba(255,255,255,.1);line-height:1.7;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono',monospace;font-size:0.95rem}
+    #preview{height:100%;overflow:auto;padding:var(--space-6);border-left:1px solid var(--color-divider);background:linear-gradient(180deg,var(--color-surface),var(--color-surface-2))}
+    .dragbar{background:var(--color-bg);border-left:1px solid var(--color-divider);border-right:1px solid var(--color-divider);cursor:col-resize;position:relative}
+    .dragbar::after{content:'';position:absolute;inset:50% 2px auto 2px;height:3rem;transform:translateY(-50%);border-radius:999px;background:color-mix(in srgb,var(--color-text-muted) 18%, transparent)}
+    .preview-content{max-width:78ch;margin:0 auto}
+    .preview-content>*+*{margin-top:1em}
+    .preview-content h1,.preview-content h2,.preview-content h3{font-family:var(--font-display);line-height:1.12;letter-spacing:-0.02em}
+    .preview-content h1{font-size:clamp(2rem,1.5rem + 2vw,3.2rem)}
+    .preview-content h2{font-size:clamp(1.6rem,1.3rem + 1.2vw,2.4rem);margin-top:1.5em}
+    .preview-content h3{font-size:clamp(1.25rem,1.1rem + .7vw,1.7rem);margin-top:1.35em}
+    .preview-content p,.preview-content li{max-width:72ch;color:var(--color-text)}
+    .preview-content ul,.preview-content ol{padding-left:1.35rem}
+    .preview-content blockquote{padding:var(--space-4) var(--space-5);border-left:3px solid var(--color-primary);background:var(--color-primary-highlight);border-radius:var(--radius-md);color:var(--color-text-muted)}
+    .preview-content code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9em;background:var(--color-surface-offset);padding:.15rem .35rem;border-radius:.35rem}
+    .preview-content pre{background:#111318;color:#f4f4f3;padding:var(--space-5);border-radius:var(--radius-lg);overflow:auto;box-shadow:var(--shadow-sm)}
+    .preview-content pre code{background:transparent;padding:0;color:inherit}
+    .preview-content table{width:100%;border-collapse:collapse;margin-top:1rem;font-size:var(--text-sm)}
+    .preview-content th,.preview-content td{border:1px solid var(--color-border);padding:.65rem .8rem;text-align:left}
+    .preview-content img{border-radius:var(--radius-md);box-shadow:var(--shadow-md)}
+    .pill{display:inline-flex;align-items:center;gap:var(--space-2);padding:.35rem .7rem;border-radius:999px;background:var(--color-surface-offset);font-size:var(--text-xs)}
+    .pill.live{background:var(--color-primary-highlight);color:var(--color-primary)}
+    .kbd{padding:.15rem .4rem;border:1px solid var(--color-border);border-bottom-width:2px;border-radius:.4rem;background:var(--color-surface-2);font-size:.78rem}
+    .welcome{display:grid;gap:var(--space-4);padding:var(--space-6);border:1px dashed var(--color-border);border-radius:var(--radius-lg);background:color-mix(in srgb,var(--color-surface-2) 70%, transparent)}
+    .welcome h2{font-family:var(--font-display);font-size:var(--text-xl)}
+    .hidden-input{display:none}
+    .toast{position:fixed;right:1rem;bottom:1rem;max-width:26rem;padding:0.9rem 1rem;border-radius:1rem;background:var(--color-surface);border:1px solid var(--color-border);box-shadow:var(--shadow-md);font-size:var(--text-sm);transform:translateY(12px);opacity:0;pointer-events:none;transition:all var(--transition)}
+    .toast.show{transform:translateY(0);opacity:1}
+    .mono{font-variant-numeric:tabular-nums}
+    @media (max-width: 980px){
+      .workspace{grid-template-columns:1fr;grid-template-rows:minmax(40dvh,1fr) 1px minmax(36dvh,1fr)}
+      .dragbar{display:none}
+      #preview{border-left:none;border-top:1px solid var(--color-divider)}
+      .statusbar{grid-template-columns:1fr 1fr;row-gap:var(--space-2)}
+      .brand-copy p{max-width:58vw}
+    }
+    @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-label="Logo">
+            <path d="M5 18V6h5.5a4 4 0 0 1 0 8H5"></path>
+            <path d="M13 18l2.8-12L19 18"></path>
+          </svg>
+        </div>
+        <div class="brand-copy">
+          <h1>Local Markdown Editor</h1>
+          <p id="filePathLabel">No file open</p>
+        </div>
+      </div>
+      <div class="toolbar-secondary">
+        <button class="btn btn-ghost" id="themeToggle" aria-label="Toggle theme">◐</button>
+      </div>
+    </header>
+
+    <section class="toolbar-wrap" aria-label="Editor toolbar">
+      <div class="toolbar">
+        <button class="btn btn-primary" id="openBtn">Open file</button>
+        <button class="btn" id="saveBtn" disabled>Save</button>
+        <button class="btn" id="saveAsBtn">Save as</button>
+        <button class="btn" id="newBtn">New</button>
+      </div>
+      <div class="toolbar-secondary">
+        <span class="pill live">Live preview</span>
+        <span class="pill">Autosave <span class="kbd">ON</span></span>
+        <span class="pill">Shortcuts <span class="kbd">⌘/Ctrl+S</span></span>
+      </div>
+    </section>
+
+    <main class="workspace">
+      <section class="panel" aria-label="Markdown editor panel">
+        <div class="panel-head"><strong>Editor</strong><span class="pill" id="dirtyBadge">Saved</span></div>
+        <div class="editor-wrap">
+          <textarea id="editor" spellcheck="false" aria-label="Markdown editor"># Welcome\n\nThis is your local-first markdown editor.\n\n- Open a `.md` file from your computer\n- Edit with live preview\n- Autosave after a short pause\n\n## Try it\n\nType here, then use **Open file** or **Save as** to connect it to a real file on disk.\n\n> The app keeps file handles only in memory for the current session.</textarea>
+        </div>
+      </section>
+
+      <div class="dragbar" id="dragbar" aria-hidden="true"></div>
+
+      <section class="panel" aria-label="Markdown preview panel">
+        <div class="panel-head"><strong>Preview</strong><span class="pill" id="supportBadge">Checking browser support…</span></div>
+        <div id="preview"><div class="preview-content" id="previewContent"></div></div>
+      </section>
+    </main>
+
+    <footer class="statusbar">
+      <div id="saveState">Ready</div>
+      <div class="mono" id="wordCount">0 words</div>
+      <div class="mono" id="charCount">0 chars</div>
+      <div class="mono" id="updatedAt">Not saved yet</div>
+    </footer>
+  </div>
+
+  <input class="hidden-input" id="legacyOpenInput" type="file" accept=".md,.markdown,.txt,text/markdown,text/plain" />
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    marked.setOptions({ gfm: true, breaks: true, headerIds: false, mangle: false });
+
+    const state = {
+      fileHandle: null,
+      fileName: 'Untitled.md',
+      dirty: false,
+      lastSavedContent: '',
+      autosaveTimer: null,
+      lastSavedAt: null,
+      supportsFS: 'showOpenFilePicker' in window && 'showSaveFilePicker' in window,
+      saveInProgress: false,
+      text: ''
+    };
+
+    const el = {
+      editor: document.getElementById('editor'),
+      previewContent: document.getElementById('previewContent'),
+      saveBtn: document.getElementById('saveBtn'),
+      saveAsBtn: document.getElementById('saveAsBtn'),
+      openBtn: document.getElementById('openBtn'),
+      newBtn: document.getElementById('newBtn'),
+      filePathLabel: document.getElementById('filePathLabel'),
+      saveState: document.getElementById('saveState'),
+      wordCount: document.getElementById('wordCount'),
+      charCount: document.getElementById('charCount'),
+      updatedAt: document.getElementById('updatedAt'),
+      dirtyBadge: document.getElementById('dirtyBadge'),
+      supportBadge: document.getElementById('supportBadge'),
+      themeToggle: document.getElementById('themeToggle'),
+      legacyOpenInput: document.getElementById('legacyOpenInput'),
+      toast: document.getElementById('toast'),
+      dragbar: document.getElementById('dragbar'),
+      workspace: document.querySelector('.workspace')
+    };
+
+    function showToast(message) {
+      el.toast.textContent = message;
+      el.toast.classList.add('show');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => el.toast.classList.remove('show'), 2600);
+    }
+
+    function setTheme(next) {
+      document.documentElement.setAttribute('data-theme', next);
+      el.themeToggle.textContent = next === 'dark' ? '☀︎' : '◐';
+      el.themeToggle.setAttribute('aria-label', `Switch to ${next === 'dark' ? 'light' : 'dark'} mode`);
+    }
+
+    function syncCounts() {
+      const text = el.editor.value;
+      const words = (text.trim().match(/\S+/g) || []).length;
+      el.wordCount.textContent = `${words} words`;
+      el.charCount.textContent = `${text.length} chars`;
+    }
+
+    function renderPreview() {
+      const raw = el.editor.value;
+      const html = DOMPurify.sanitize(marked.parse(raw));
+      el.previewContent.innerHTML = html || `<div class="welcome"><h2>Nothing to preview yet</h2><p>Start typing Markdown in the editor to see formatted output here.</p></div>`;
+      syncCounts();
+    }
+
+    function updateStatus() {
+      el.filePathLabel.textContent = state.fileName || 'Untitled.md';
+      el.saveBtn.disabled = !state.fileHandle && !state.dirty;
+      el.dirtyBadge.textContent = state.dirty ? 'Unsaved changes' : 'Saved';
+      el.dirtyBadge.style.background = state.dirty ? 'var(--color-warning)' : 'var(--color-surface-offset)';
+      el.dirtyBadge.style.color = state.dirty ? 'var(--color-text-inverse)' : 'var(--color-text-muted)';
+      el.saveState.textContent = state.saveInProgress ? 'Saving…' : state.dirty ? 'Unsaved changes' : 'Ready';
+      el.updatedAt.textContent = state.lastSavedAt ? `Saved ${new Date(state.lastSavedAt).toLocaleTimeString()}` : 'Not saved yet';
+    }
+
+    function markDirty(isDirty = true) {
+      state.dirty = isDirty;
+      updateStatus();
+    }
+
+    function scheduleAutosave() {
+      clearTimeout(state.autosaveTimer);
+      state.autosaveTimer = setTimeout(async () => {
+        if (!state.dirty || !state.fileHandle) return;
+        try {
+          await saveToCurrentHandle(true);
+        } catch (err) {
+          console.error(err);
+        }
+      }, 1000);
+    }
+
+    async function verifyWritePermission(fileHandle) {
+      if (!fileHandle) return false;
+      const opts = { mode: 'readwrite' };
+      if ((await fileHandle.queryPermission(opts)) === 'granted') return true;
+      return (await fileHandle.requestPermission(opts)) === 'granted';
+    }
+
+    async function openWithFSAPI() {
+      const [handle] = await window.showOpenFilePicker({
+        types: [{ description: 'Markdown files', accept: { 'text/markdown': ['.md', '.markdown'], 'text/plain': ['.txt'] } }],
+        excludeAcceptAllOption: false,
+        multiple: false
+      });
+      const file = await handle.getFile();
+      const text = await file.text();
+      state.fileHandle = handle;
+      state.fileName = file.name;
+      state.lastSavedContent = text;
+      state.text = text;
+      el.editor.value = text;
+      state.dirty = false;
+      renderPreview();
+      updateStatus();
+      showToast(`Opened ${file.name}`);
+    }
+
+    async function openWithLegacyInput() {
+      el.legacyOpenInput.click();
+    }
+
+    async function saveToHandle(handle) {
+      state.saveInProgress = true;
+      updateStatus();
+      const writable = await handle.createWritable();
+      await writable.write(el.editor.value);
+      await writable.close();
+      state.lastSavedContent = el.editor.value;
+      state.lastSavedAt = Date.now();
+      state.saveInProgress = false;
+      markDirty(false);
+      updateStatus();
+    }
+
+    async function saveToCurrentHandle(fromAutosave = false) {
+      if (!state.fileHandle) return saveAsFile();
+      const granted = await verifyWritePermission(state.fileHandle);
+      if (!granted) {
+        state.saveInProgress = false;
+        updateStatus();
+        if (!fromAutosave) showToast('Write permission was not granted.');
+        return;
+      }
+      await saveToHandle(state.fileHandle);
+      if (!fromAutosave) showToast(`Saved ${state.fileName}`);
+    }
+
+    async function saveAsFile() {
+      if (!state.supportsFS) {
+        const blob = new Blob([el.editor.value], { type: 'text/markdown;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = state.fileName || 'Untitled.md';
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+        state.lastSavedAt = Date.now();
+        state.lastSavedContent = el.editor.value;
+        markDirty(false);
+        showToast('Downloaded a Markdown copy because direct file save is not supported in this browser.');
+        return;
+      }
+      const handle = await window.showSaveFilePicker({
+        suggestedName: state.fileName || 'Untitled.md',
+        types: [{ description: 'Markdown file', accept: { 'text/markdown': ['.md'], 'text/plain': ['.txt'] } }]
+      });
+      state.fileHandle = handle;
+      state.fileName = handle.name || state.fileName;
+      await saveToCurrentHandle(false);
+    }
+
+    function newDocument() {
+      const proceed = !state.dirty || confirm('You have unsaved changes. Create a new document anyway?');
+      if (!proceed) return;
+      state.fileHandle = null;
+      state.fileName = 'Untitled.md';
+      state.lastSavedContent = '';
+      state.lastSavedAt = null;
+      el.editor.value = '# Untitled\n\nStart writing here.';
+      markDirty(true);
+      renderPreview();
+      updateStatus();
+    }
+
+    el.editor.addEventListener('input', () => {
+      state.text = el.editor.value;
+      renderPreview();
+      markDirty(el.editor.value !== state.lastSavedContent);
+      scheduleAutosave();
+    });
+
+    el.openBtn.addEventListener('click', async () => {
+      try {
+        if (state.supportsFS) await openWithFSAPI();
+        else await openWithLegacyInput();
+      } catch (err) {
+        if (err?.name !== 'AbortError') {
+          console.error(err);
+          showToast('Could not open the file.');
+        }
+      }
+    });
+
+    el.legacyOpenInput.addEventListener('change', async (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const text = await file.text();
+      state.fileHandle = null;
+      state.fileName = file.name;
+      state.lastSavedContent = text;
+      state.lastSavedAt = null;
+      el.editor.value = text;
+      markDirty(false);
+      renderPreview();
+      updateStatus();
+      showToast(`Opened ${file.name} in compatibility mode.`);
+      event.target.value = '';
+    });
+
+    el.saveBtn.addEventListener('click', async () => {
+      try { await saveToCurrentHandle(false); } catch (err) { console.error(err); showToast('Save failed.'); }
+    });
+
+    el.saveAsBtn.addEventListener('click', async () => {
+      try { await saveAsFile(); } catch (err) { if (err?.name !== 'AbortError') { console.error(err); showToast('Save as failed.'); } }
+    });
+
+    el.newBtn.addEventListener('click', newDocument);
+
+    window.addEventListener('keydown', async (event) => {
+      const meta = event.ctrlKey || event.metaKey;
+      if (!meta) return;
+      if (event.key.toLowerCase() === 's') {
+        event.preventDefault();
+        if (event.shiftKey) await saveAsFile();
+        else await saveToCurrentHandle(false);
+      }
+      if (event.key.toLowerCase() === 'o') {
+        event.preventDefault();
+        if (state.supportsFS) await openWithFSAPI();
+        else await openWithLegacyInput();
+      }
+    });
+
+    window.addEventListener('beforeunload', (event) => {
+      if (!state.dirty) return;
+      event.preventDefault();
+      event.returnValue = '';
+    });
+
+    el.themeToggle.addEventListener('click', () => {
+      const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      setTheme(next);
+    });
+
+    (function initDragbar(){
+      const mediaQuery = window.matchMedia('(max-width: 980px)');
+      let active = false;
+      el.dragbar.addEventListener('pointerdown', () => { if (!mediaQuery.matches) active = true; });
+      window.addEventListener('pointerup', () => active = false);
+      window.addEventListener('pointermove', (e) => {
+        if (!active || mediaQuery.matches) return;
+        const rect = el.workspace.getBoundingClientRect();
+        const ratio = (e.clientX - rect.left) / rect.width;
+        const bounded = Math.min(0.72, Math.max(0.28, ratio));
+        el.workspace.style.gridTemplateColumns = `minmax(320px, ${bounded}fr) 10px minmax(320px, ${1 - bounded}fr)`;
+      });
+    })();
+
+    function init() {
+      const preferredDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setTheme(preferredDark ? 'dark' : 'light');
+      el.supportBadge.textContent = state.supportsFS ? 'Direct file access supported' : 'Compatibility mode';
+      renderPreview();
+      updateStatus();
+    }
+
+    init();
+  </script>
+</body>
+</html>

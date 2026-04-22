@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MarkSign Editor</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&family=JetBrains+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+
+  <style>
+    /* ===== Design tokens ===== */
+    :root {
+      --navy:              #1a2744;
+      --navy-hover:        #243460;
+      --btn-text:          rgba(255,255,255,0.88);
+      --btn-hover:         rgba(255,255,255,0.11);
+      --btn-active:        rgba(255,255,255,0.18);
+      --sep:               rgba(255,255,255,0.14);
+
+      --status-saved:      #4ade80;
+      --status-saved-bg:   rgba(45,106,79,0.22);
+      --status-saving:     rgba(255,255,255,0.45);
+      --status-saving-bg:  rgba(255,255,255,0.07);
+      --status-unsaved:    #fca5a5;
+      --status-unsaved-bg: rgba(230,57,70,0.2);
+      --status-new:        rgba(255,255,255,0.38);
+      --status-new-bg:     transparent;
+
+      --editor-bg:         #f8f9fa;
+      --editor-text:       #1c2025;
+      --editor-caret:      #1a2744;
+      --editor-sel:        rgba(26,39,68,0.14);
+      --editor-placeholder:#9ca3af;
+
+      --preview-bg:        #f3f2ee;
+      --preview-text:      #1f0909;
+      --preview-link:      #1a2744;
+      --preview-code-bg:   #eae8e3;
+      --preview-border:    #ccc8c0;
+      --preview-quote:     #8b7355;
+      --preview-h-rule:    #d4cfc7;
+
+      --divider:           #dde0e4;
+      --divider-hover:     #b0b7c0;
+
+      --footer-bg:         #f0f2f4;
+      --footer-text:       #818a96;
+      --footer-border:     #dde0e4;
+
+      --toast-bg:          #1a2744;
+
+      --scrollbar:         #ccc8c0;
+    }
+
+    [data-theme="dark"] {
+      --editor-bg:         #1e1e1e;
+      --editor-text:       #e2e2e2;
+      --editor-caret:      #82aaff;
+      --editor-sel:        rgba(130,170,255,0.18);
+      --editor-placeholder:#555;
+
+      --preview-bg:        #1c1c1c;
+      --preview-text:      #ddd9d0;
+      --preview-link:      #82aaff;
+      --preview-code-bg:   #282828;
+      --preview-border:    #363636;
+      --preview-quote:     #7a6f5e;
+      --preview-h-rule:    #333;
+
+      --divider:           #3a3a3a;
+      --divider-hover:     #5a5a5a;
+
+      --footer-bg:         #252525;
+      --footer-text:       #666;
+      --footer-border:     #333;
+
+      --scrollbar:         #3a3a3a;
+    }
+
+    /* ===== Reset ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      background: var(--editor-bg);
+    }
+
+    /* ===== Skip link ===== */
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+      top: 8px;
+      background: var(--navy);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 13px;
+      text-decoration: none;
+      z-index: 9999;
+    }
+    .skip-link:focus { left: 8px; }
+
+    /* ===== Top bar ===== */
+    #topbar {
+      height: 48px;
+      background: var(--navy);
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 2px;
+      flex-shrink: 0;
+      user-select: none;
+    }
+
+    #brand {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 0 6px;
+      margin-right: 6px;
+    }
+
+    #brand-name {
+      font-size: 14.5px;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: 0.01em;
+    }
+
+    .tb-sep {
+      width: 1px;
+      height: 18px;
+      background: var(--sep);
+      margin: 0 4px;
+      flex-shrink: 0;
+    }
+
+    .tb-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      height: 30px;
+      padding: 0 9px;
+      border: none;
+      background: transparent;
+      color: var(--btn-text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.1s;
+      white-space: nowrap;
+    }
+    .tb-btn:hover  { background: var(--btn-hover); }
+    .tb-btn:active { background: var(--btn-active); }
+    .tb-btn:focus-visible { outline: 2px solid rgba(255,255,255,0.45); outline-offset: 1px; }
+    .tb-btn svg { flex-shrink: 0; }
+
+    #topbar-gap { flex: 1; }
+
+    /* Save status badge */
+    #save-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 26px;
+      padding: 0 10px;
+      border-radius: 13px;
+      font-size: 11.5px;
+      font-weight: 500;
+      letter-spacing: 0.025em;
+      transition: background 0.25s, color 0.25s;
+    }
+    #save-status .dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      transition: background 0.25s;
+    }
+
+    #save-status[data-s="saved"]   { color: var(--status-saved);   background: var(--status-saved-bg); }
+    #save-status[data-s="saving"]  { color: var(--status-saving);  background: var(--status-saving-bg); }
+    #save-status[data-s="unsaved"] { color: var(--status-unsaved); background: var(--status-unsaved-bg); }
+    #save-status[data-s="new"]     { color: var(--status-new);     background: var(--status-new-bg); }
+
+    #save-status[data-s="saved"]   .dot { background: var(--status-saved); }
+    #save-status[data-s="saving"]  .dot { background: var(--status-saving); }
+    #save-status[data-s="unsaved"] .dot { background: var(--status-unsaved); }
+    #save-status[data-s="new"]     .dot { background: var(--status-new); }
+
+    /* ===== Main split ===== */
+    #main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ===== Editor pane ===== */
+    #editor-pane {
+      display: flex;
+      flex-direction: column;
+      width: 50%;
+      min-width: 160px;
+      max-width: calc(100% - 160px);
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Drag-over overlay */
+    #editor-pane.drag-over::after {
+      content: 'Drop .md file';
+      position: absolute; inset: 0;
+      background: rgba(26,39,68,0.06);
+      border: 2px dashed var(--navy);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 500;
+      color: var(--navy);
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    [data-theme="dark"] #editor-pane.drag-over::after {
+      border-color: #82aaff;
+      color: #82aaff;
+      background: rgba(130,170,255,0.06);
+    }
+
+    #editor {
+      flex: 1;
+      width: 100%;
+      padding: 28px 36px 40px;
+      border: none;
+      outline: none;
+      resize: none;
+      background: var(--editor-bg);
+      color: var(--editor-text);
+      font-family: 'JetBrains Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+      font-size: 13.5px;
+      line-height: 1.78;
+      tab-size: 2;
+      caret-color: var(--editor-caret);
+      transition: background 0.2s, color 0.2s;
+    }
+    #editor::selection        { background: var(--editor-sel); }
+    #editor::-moz-selection   { background: var(--editor-sel); }
+    #editor::placeholder      { color: var(--editor-placeholder); }
+
+    /* ===== Divider ===== */
+    #divider {
+      width: 5px;
+      background: var(--divider);
+      cursor: col-resize;
+      flex-shrink: 0;
+      position: relative;
+      transition: background 0.15s;
+      z-index: 5;
+    }
+    #divider:hover,
+    #divider.active { background: var(--divider-hover); }
+
+    #divider::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      width: 2px; height: 28px;
+      background: var(--divider-hover);
+      border-radius: 1px;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    #divider:hover::after,
+    #divider.active::after { opacity: 1; }
+
+    /* ===== Preview pane ===== */
+    #preview-pane {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      background: var(--preview-bg);
+      position: relative;
+      transition: background 0.2s;
+    }
+
+    /* Subtle ruled-paper texture — lightweight CSS lines */
+    #preview-pane {
+      background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 27px,
+        rgba(0,0,0,0.028) 28px
+      );
+    }
+    [data-theme="dark"] #preview-pane {
+      background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 27px,
+        rgba(255,255,255,0.025) 28px
+      );
+    }
+
+    #preview {
+      max-width: 660px;
+      margin: 0 auto;
+      padding: 40px 44px 72px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Empty state */
+    #preview-empty {
+      padding: 80px 0 0;
+      text-align: center;
+      color: var(--preview-quote);
+      font-family: 'PT Serif', Georgia, serif;
+      font-style: italic;
+      font-size: 15px;
+      opacity: 0.5;
+    }
+
+    /* ===== Preview typography ===== */
+    #preview {
+      font-family: 'PT Serif', Georgia, 'Times New Roman', serif;
+      font-size: 17px;
+      line-height: 1.8;
+      color: var(--preview-text);
+    }
+
+    #preview h1, #preview h2, #preview h3,
+    #preview h4, #preview h5, #preview h6 {
+      font-family: 'PT Serif', Georgia, serif;
+      font-weight: 700;
+      line-height: 1.22;
+      margin: 2em 0 0.55em;
+      color: var(--preview-text);
+    }
+    #preview h1 { font-size: 1.95em; margin-top: 0.2em; }
+    #preview h2 { font-size: 1.45em; }
+    #preview h3 { font-size: 1.2em; }
+    #preview h4 { font-size: 1.05em; }
+    #preview h5, #preview h6 { font-size: 1em; }
+
+    #preview p  { margin: 0 0 1.15em; }
+
+    #preview a {
+      color: var(--preview-link);
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 2px;
+    }
+    #preview a:hover { text-decoration-thickness: 2px; }
+
+    #preview strong { font-weight: 700; }
+    #preview em     { font-style: italic; }
+    #preview del    { opacity: 0.55; text-decoration: line-through; }
+
+    #preview code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.83em;
+      background: var(--preview-code-bg);
+      padding: 0.14em 0.42em;
+      border-radius: 4px;
+    }
+
+    #preview pre {
+      background: var(--preview-code-bg);
+      border: 1px solid var(--preview-border);
+      border-radius: 6px;
+      padding: 16px 20px;
+      overflow-x: auto;
+      margin: 0 0 1.2em;
+    }
+    #preview pre code {
+      background: none;
+      padding: 0;
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    #preview blockquote {
+      border-left: 3px solid var(--preview-quote);
+      margin: 0 0 1.2em;
+      padding: 2px 0 2px 20px;
+      color: var(--preview-quote);
+      font-style: italic;
+    }
+    #preview blockquote p { margin: 0; }
+
+    #preview ul, #preview ol {
+      margin: 0 0 1.2em;
+      padding-left: 1.75em;
+    }
+    #preview li { margin: 0.28em 0; }
+    #preview li > ul, #preview li > ol { margin-bottom: 0; }
+
+    #preview hr {
+      border: none;
+      border-top: 1px solid var(--preview-h-rule);
+      margin: 2em 0;
+    }
+
+    #preview table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0 0 1.2em;
+      font-size: 0.94em;
+    }
+    #preview th, #preview td {
+      padding: 8px 14px;
+      border: 1px solid var(--preview-border);
+      text-align: left;
+    }
+    #preview th {
+      background: var(--preview-code-bg);
+      font-weight: 700;
+    }
+    #preview tr:nth-child(even) td { background: rgba(0,0,0,0.018); }
+    [data-theme="dark"] #preview tr:nth-child(even) td { background: rgba(255,255,255,0.025); }
+
+    #preview img { max-width: 100%; border-radius: 5px; }
+
+    /* ===== Footer ===== */
+    #footer {
+      height: 30px;
+      background: var(--footer-bg);
+      border-top: 1px solid var(--footer-border);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .ft { font-size: 11.5px; color: var(--footer-text); white-space: nowrap; }
+    #ft-name { font-weight: 500; }
+    #ft-gap  { flex: 1; }
+    .ft + .ft::before {
+      content: '·';
+      margin: 0 7px;
+      opacity: 0.45;
+    }
+
+    /* ===== Toast ===== */
+    #toast {
+      position: fixed;
+      bottom: 44px;
+      left: 50%;
+      transform: translateX(-50%) translateY(6px);
+      background: var(--toast-bg);
+      color: rgba(255,255,255,0.92);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12.5px;
+      padding: 7px 14px;
+      border-radius: 6px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.18s, transform 0.18s;
+      z-index: 200;
+      white-space: nowrap;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.22);
+    }
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ===== Scrollbars ===== */
+    #preview-pane::-webkit-scrollbar,
+    #editor::-webkit-scrollbar      { width: 5px; }
+    #preview-pane::-webkit-scrollbar-track,
+    #editor::-webkit-scrollbar-track { background: transparent; }
+    #preview-pane::-webkit-scrollbar-thumb,
+    #editor::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 3px; }
+
+    /* ===== Focus visible ===== */
+    :focus-visible { outline: 2px solid #1a2744; outline-offset: 2px; }
+    [data-theme="dark"] :focus-visible { outline-color: #82aaff; }
+    #editor:focus-visible { outline: none; }
+
+    /* ===== Reduced motion ===== */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <a href="#editor" class="skip-link">Skip to editor</a>
+
+  <!-- ── Top bar ── -->
+  <header id="topbar" role="banner">
+
+    <div id="brand" aria-label="MarkSign Editor">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+        <path d="M11 1.5 3.5 5v6.5c0 4.5 3.3 8.7 7.5 9.7 4.2-1 7.5-5.2 7.5-9.7V5L11 1.5z"
+              fill="rgba(255,255,255,0.13)" stroke="rgba(255,255,255,0.55)" stroke-width="1.4"/>
+        <path d="M7.5 11l2.8 2.8 4.2-4.2"
+              stroke="rgba(255,255,255,0.88)" stroke-width="1.6"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span id="brand-name">MarkSign</span>
+    </div>
+
+    <div class="tb-sep" role="separator"></div>
+
+    <button class="tb-btn" id="btn-open" aria-label="Open file (⌘O)" title="Open (⌘O)">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+        <path d="M1 3h3.5l1 1.2H11c.3 0 .5.2.5.5V10c0 .3-.2.5-.5.5H2a.5.5 0 0 1-.5-.5V3.5c0-.3.2-.5.5-.5z"
+              stroke="currentColor" stroke-width="1.15" fill="none"/>
+      </svg>
+      Open
+    </button>
+
+    <button class="tb-btn" id="btn-save" aria-label="Save (⌘S)" title="Save (⌘S)">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+        <path d="M1.5 1.5h7.8l2.2 2.2v7.8c0 .3-.2.5-.5.5h-9a.5.5 0 0 1-.5-.5V2c0-.3.2-.5.5-.5z"
+              stroke="currentColor" stroke-width="1.15" fill="none"/>
+        <rect x="3.5" y="1.5" width="5" height="2.8" rx=".4" stroke="currentColor" stroke-width="1.15" fill="none"/>
+        <rect x="2.5" y="6.5" width="8" height="4" rx=".4" stroke="currentColor" stroke-width="1.15" fill="none"/>
+      </svg>
+      Save
+    </button>
+
+    <button class="tb-btn" id="btn-save-as" aria-label="Save As (⌘⇧S)" title="Save As (⌘⇧S)">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+        <path d="M1.5 1.5h7.8l2.2 2.2v7.8c0 .3-.2.5-.5.5h-9a.5.5 0 0 1-.5-.5V2c0-.3.2-.5.5-.5z"
+              stroke="currentColor" stroke-width="1.15" fill="none"/>
+        <path d="M6.5 5v3.5M4.8 7l1.7 1.7L8.2 7"
+              stroke="currentColor" stroke-width="1.15" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Save As
+    </button>
+
+    <div id="topbar-gap" role="none"></div>
+
+    <div id="save-status" data-s="new" role="status" aria-live="polite" aria-atomic="true">
+      <span class="dot" aria-hidden="true"></span>
+      <span id="status-text">New document</span>
+    </div>
+
+    <div class="tb-sep" role="separator"></div>
+
+    <button class="tb-btn" id="btn-theme" aria-label="Toggle dark mode" title="Toggle theme">
+      <!-- Sun (shown in light mode) -->
+      <svg id="icon-sun" width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+        <circle cx="7.5" cy="7.5" r="2.8" stroke="currentColor" stroke-width="1.2"/>
+        <path d="M7.5 1v1.5M7.5 12.5V14M1 7.5h1.5M12.5 7.5H14M3 3l1 1M11 11l1 1M11 3l-1 1M3 11l1-1"
+              stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+      <!-- Moon (shown in dark mode) -->
+      <svg id="icon-moon" width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true" style="display:none">
+        <path d="M11.5 8A5 5 0 0 1 4 3.5a5.5 5.5 0 1 0 7.5 4.5z"
+              stroke="currentColor" stroke-width="1.2" fill="none"/>
+      </svg>
+    </button>
+
+  </header>
+
+  <!-- ── Main content ── -->
+  <main id="main" role="main">
+
+    <!-- Editor -->
+    <section id="editor-pane" aria-label="Markdown editor">
+      <label for="editor" style="position:absolute;left:-9999px">Markdown content</label>
+      <textarea
+        id="editor"
+        spellcheck="true"
+        autocorrect="off"
+        autocapitalize="off"
+        placeholder="Start writing Markdown…&#10;&#10;Open a .md file with ⌘O, or drag it here."
+        aria-label="Markdown editor"
+      ></textarea>
+    </section>
+
+    <!-- Resizable divider -->
+    <div id="divider"
+         role="separator"
+         aria-label="Resize editor and preview panels"
+         aria-orientation="vertical"
+         tabindex="0"></div>
+
+    <!-- Preview -->
+    <section id="preview-pane" aria-label="Rendered Markdown preview">
+      <div id="preview" aria-live="polite"></div>
+    </section>
+
+  </main>
+
+  <!-- ── Footer ── -->
+  <footer id="footer" role="contentinfo">
+    <span class="ft" id="ft-name">Untitled.md</span>
+    <div id="ft-gap" role="none"></div>
+    <span class="ft" id="ft-words">0 words</span>
+    <span class="ft" id="ft-chars">0 chars</span>
+  </footer>
+
+  <!-- Toast -->
+  <div id="toast" role="alert" aria-live="assertive" aria-atomic="true"></div>
+
+
+  <script>
+  'use strict';
+
+  /* ── Marked config ── */
+  marked.setOptions({ breaks: true, gfm: true });
+
+  /* ── State ── */
+  const store = {
+    text:       '',
+    handle:     null,
+    fileName:   'Untitled.md',
+    status:     'new',   // 'new' | 'saved' | 'saving' | 'unsaved'
+    isDirty:    false,
+    lastSaved:  null,
+  };
+
+  /* ── DOM refs ── */
+  const $ = id => document.getElementById(id);
+  const editor      = $('editor');
+  const preview     = $('preview');
+  const statusEl    = $('save-status');
+  const statusText  = $('status-text');
+  const ftName      = $('ft-name');
+  const ftWords     = $('ft-words');
+  const ftChars     = $('ft-chars');
+  const toast       = $('toast');
+  const divider     = $('divider');
+  const editorPane  = $('editor-pane');
+  const mainEl      = $('main');
+
+  /* ── Feature detection ── */
+  const hasFS = typeof window.showOpenFilePicker === 'function';
+
+  /* ── Utilities ── */
+  function debounce(fn, ms) {
+    let t;
+    return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+  }
+
+  let toastTimer;
+  function showToast(msg, duration = 2400) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), duration);
+  }
+
+  /* ── File Service ── */
+  const FS = {
+    async open() {
+      if (hasFS) {
+        let handles;
+        try {
+          handles = await window.showOpenFilePicker({
+            multiple: false,
+            types: [{ description: 'Markdown', accept: { 'text/markdown': ['.md', '.markdown'], 'text/plain': ['.txt'] } }]
+          });
+        } catch (e) {
+          if (e.name === 'AbortError') return null;
+          throw e;
+        }
+        const h = handles[0];
+        const f = await h.getFile();
+        return { handle: h, text: await f.text(), name: f.name };
+      }
+      // Fallback: <input>
+      return new Promise(resolve => {
+        const inp = document.createElement('input');
+        inp.type = 'file';
+        inp.accept = '.md,.markdown,.txt';
+        inp.onchange = async () => {
+          const f = inp.files[0];
+          if (!f) { resolve(null); return; }
+          resolve({ handle: null, text: await f.text(), name: f.name });
+        };
+        inp.oncancel = () => resolve(null);
+        inp.click();
+      });
+    },
+
+    async write(handle, text) {
+      if (!handle) return false;
+      try {
+        const w = await handle.createWritable();
+        await w.write(text);
+        await w.close();
+        return true;
+      } catch (e) {
+        if (e.name !== 'AbortError') console.error('Write error:', e);
+        return false;
+      }
+    },
+
+    async saveAs(text, name = 'untitled.md') {
+      if (hasFS) {
+        let handle;
+        try {
+          handle = await window.showSaveFilePicker({
+            suggestedName: name,
+            types: [{ description: 'Markdown', accept: { 'text/markdown': ['.md'] } }]
+          });
+        } catch (e) {
+          if (e.name !== 'AbortError') console.error('SaveAs error:', e);
+          return null;
+        }
+        const ok = await this.write(handle, text);
+        return ok ? handle : null;
+      }
+      // Fallback: download
+      const blob = new Blob([text], { type: 'text/markdown;charset=utf-8' });
+      const url  = URL.createObjectURL(blob);
+      const a    = Object.assign(document.createElement('a'), { href: url, download: name });
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      return null; // no writable handle from download
+    }
+  };
+
+  /* ── UI helpers ── */
+  function setStatus(s, label) {
+    store.status = s;
+    statusEl.setAttribute('data-s', s);
+    statusText.textContent = label;
+  }
+
+  function updateFooter() {
+    const t = store.text;
+    const words = t.trim() ? t.trim().split(/\s+/).length : 0;
+    ftWords.textContent = `${words.toLocaleString()} word${words !== 1 ? 's' : ''}`;
+    ftChars.textContent = `${t.length.toLocaleString()} char${t.length !== 1 ? 's' : ''}`;
+    ftName.textContent  = store.fileName;
+  }
+
+  const schedulePreview = debounce(() => {
+    const html = store.text.trim()
+      ? DOMPurify.sanitize(marked.parse(store.text), {
+          USE_PROFILES: { html: true },
+          ADD_ATTR: ['target']
+        })
+      : '<div id="preview-empty">Preview appears here</div>';
+    preview.innerHTML = html;
+  }, 120);
+
+  /* ── Core actions ── */
+  async function doOpen() {
+    const r = await FS.open();
+    if (!r) return;
+    store.handle   = r.handle;
+    store.fileName = r.name;
+    store.text     = r.text;
+    store.isDirty  = false;
+    editor.value   = r.text;
+    schedulePreview();
+    updateFooter();
+    setStatus('saved', 'Saved');
+    store.lastSaved = new Date();
+    showToast(`Opened: ${r.name}`);
+    editor.focus();
+  }
+
+  async function doSave() {
+    // No handle → first save → prompt
+    if (!store.handle) { await doSaveAs(); return; }
+    setStatus('saving', 'Saving…');
+    const ok = await FS.write(store.handle, store.text);
+    if (ok) {
+      store.isDirty  = false;
+      store.lastSaved = new Date();
+      setStatus('saved', 'Saved');
+    } else {
+      setStatus('unsaved', 'Save failed');
+      showToast('Save failed — try Save As');
+    }
+  }
+
+  async function doSaveAs() {
+    setStatus('saving', 'Saving…');
+    const handle = await FS.saveAs(store.text, store.fileName);
+    if (handle) {
+      store.handle   = handle;
+      const f = await handle.getFile();
+      store.fileName = f.name;
+      store.isDirty  = false;
+      store.lastSaved = new Date();
+      setStatus('saved', 'Saved');
+      updateFooter();
+      showToast(`Saved: ${store.fileName}`);
+    } else if (!hasFS) {
+      // Download fallback succeeded
+      store.isDirty = false;
+      setStatus('saved', 'Downloaded');
+      showToast('File downloaded');
+    } else {
+      // Cancelled or failed
+      setStatus(store.isDirty ? 'unsaved' : 'saved',
+                store.isDirty ? 'Unsaved changes' : 'Saved');
+    }
+  }
+
+  /* ── Autosave ── */
+  const triggerAutosave = debounce(() => {
+    if (store.isDirty && store.handle) doSave();
+  }, 1000);
+
+  /* ── Editor input ── */
+  editor.addEventListener('input', () => {
+    store.text    = editor.value;
+    store.isDirty = true;
+    schedulePreview();
+    updateFooter();
+    if (store.status !== 'unsaved') setStatus('unsaved', 'Unsaved changes');
+    triggerAutosave();
+  });
+
+  /* ── Drag and drop ── */
+  editorPane.addEventListener('dragover', e => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+    editorPane.classList.add('drag-over');
+  });
+  editorPane.addEventListener('dragleave', e => {
+    if (!editorPane.contains(e.relatedTarget)) editorPane.classList.remove('drag-over');
+  });
+  editorPane.addEventListener('drop', async e => {
+    e.preventDefault();
+    editorPane.classList.remove('drag-over');
+
+    // Try to grab a FileSystemFileHandle from the drop (for autosave)
+    let fsHandle = null;
+    if (hasFS && e.dataTransfer.items) {
+      for (const item of e.dataTransfer.items) {
+        if (item.kind === 'file' && typeof item.getAsFileSystemHandle === 'function') {
+          const h = await item.getAsFileSystemHandle().catch(() => null);
+          if (h && h.kind === 'file') { fsHandle = h; break; }
+        }
+      }
+    }
+
+    const files = Array.from(e.dataTransfer.files)
+      .filter(f => /\.(md|markdown|txt)$/i.test(f.name) || f.type.startsWith('text/'));
+
+    if (!files.length) { showToast('Drop a .md file to open it'); return; }
+
+    const file = files[0];
+    const text = await file.text();
+
+    store.handle   = fsHandle;
+    store.fileName = file.name;
+    store.text     = text;
+    store.isDirty  = false;
+    editor.value   = text;
+    schedulePreview();
+    updateFooter();
+    setStatus(fsHandle ? 'saved' : 'unsaved', fsHandle ? 'Saved' : 'Unsaved changes');
+    if (fsHandle) store.lastSaved = new Date();
+    showToast(`Opened: ${file.name}${!fsHandle ? ' (use Save to persist changes)' : ''}`);
+    editor.focus();
+  });
+  document.addEventListener('dragover', e => e.preventDefault());
+
+  /* ── Keyboard shortcuts ── */
+  document.addEventListener('keydown', e => {
+    const mod = e.metaKey || e.ctrlKey;
+    if (!mod) return;
+    if (e.key === 'o') { e.preventDefault(); doOpen(); }
+    else if (e.key === 's' && e.shiftKey) { e.preventDefault(); doSaveAs(); }
+    else if (e.key === 's') { e.preventDefault(); doSave(); }
+  });
+
+  /* ── Button handlers ── */
+  $('btn-open').addEventListener('click', doOpen);
+  $('btn-save').addEventListener('click', doSave);
+  $('btn-save-as').addEventListener('click', doSaveAs);
+
+  /* ── Theme toggle ── */
+  let dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+  function applyTheme() {
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    $('icon-sun').style.display  = dark ? 'none' : '';
+    $('icon-moon').style.display = dark ? '' : 'none';
+    $('btn-theme').setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+  }
+  applyTheme();
+  $('btn-theme').addEventListener('click', () => { dark = !dark; applyTheme(); });
+
+  /* ── Resizable divider (mouse) ── */
+  let resizing = false, startX = 0, startW = 0;
+
+  divider.addEventListener('mousedown', e => {
+    resizing = true;
+    startX = e.clientX;
+    startW = editorPane.offsetWidth;
+    divider.classList.add('active');
+    document.body.style.cssText += 'cursor:col-resize;user-select:none;';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', e => {
+    if (!resizing) return;
+    const max = mainEl.offsetWidth - 160;
+    editorPane.style.width = `${Math.min(max, Math.max(160, startW + e.clientX - startX))}px`;
+  });
+  document.addEventListener('mouseup', () => {
+    if (!resizing) return;
+    resizing = false;
+    divider.classList.remove('active');
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  });
+
+  /* ── Resizable divider (keyboard) ── */
+  divider.addEventListener('keydown', e => {
+    const step = e.shiftKey ? 60 : 12;
+    const max  = mainEl.offsetWidth - 160;
+    const cur  = editorPane.offsetWidth;
+    if      (e.key === 'ArrowLeft')  { e.preventDefault(); editorPane.style.width = `${Math.max(160, cur - step)}px`; }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); editorPane.style.width = `${Math.min(max, cur + step)}px`; }
+    else if (e.key === 'Home')       { e.preventDefault(); editorPane.style.width = '160px'; }
+    else if (e.key === 'End')        { e.preventDefault(); editorPane.style.width = `${max}px`; }
+  });
+
+  /* ── Init ── */
+  const WELCOME = `# Welcome to MarkSign Editor
+
+Start writing here, or open an existing \`.md\` file with **⌘O**.
+
+You can also **drag and drop** a Markdown file onto the editor pane.
+
+---
+
+## Features
+
+- **Live preview** — updates as you type
+- **Autosave** — writes back to disk after 1 second of inactivity
+- **Local-first** — your files never leave your device
+- **Split view** — drag the divider to resize either pane
+- **Keyboard shortcuts** — ⌘O open · ⌘S save · ⌘⇧S save as
+
+## Markdown support
+
+> Blockquotes, **bold**, *italic*, ~~strikethrough~~, \`inline code\`
+
+\`\`\`javascript
+// Fenced code blocks with syntax hints
+const editor = document.getElementById('editor');
+\`\`\`
+
+| Syntax    | Element      |
+|-----------|--------------|
+| \`**...**\` | **Bold**     |
+| \`*...*\`   | *Italic*     |
+| \`---\`     | Horizontal rule |
+
+---
+
+*MarkSign by Faber-Ludens Pro*
+`;
+
+  store.text   = WELCOME;
+  editor.value = WELCOME;
+  schedulePreview();
+  updateFooter();
+  setStatus('new', 'New document');
+
+  if (!hasFS) {
+    showToast('File System API unavailable — using import/export fallback', 3500);
+  }
+  </script>
+</body>
+</html>

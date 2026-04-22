@@ -1,0 +1,44 @@
+# Internal session files
+CLAUDE.md
+CLAUDE-project-log.md
+CLAUDE-session.md
+session-*.md
+
+# Communications drop zone
+communications/
+
+# Old converter engine (pre-alpha)
+2026-03-converter-engine/
+
+# Python
+**/.venv/
+**/dist/
+**/build/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.egg-info/
+
+# PyInstaller
+**/*.spec.bak
+
+# Mac app icon sources (icns is tracked; source PNGs are redundant)
+**/MarkSign.iconset/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Private notes and research
+MVP-Investment-Estimates.md
+MarkSign-Notes.md
+MarkSign-by-Lumo.md
+MarkSign.md
+Product-Requirements-Document.md
+
+# Large media assets (logos and illustrations committed separately if needed)
+logo-marksign.jpg
+markdown-viewer-pro.png
+PDF-to-MD-illustration-by-Pedro.jpeg
+PDF-to-MD-illustration-by-Pedro-2.jpeg
+BookItUp-Base44-Claude.md

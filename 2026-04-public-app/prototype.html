@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MarkSign — Prototype v4</title>
+<style>
+  /* ─── System font stack (macOS HIG) ─── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    background: #181818;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 32px 16px; gap: 20px;
+    /* macOS system colors as CSS custom properties */
+    --accent:          #0A84FF;   /* macOS blue (dark mode) — reads from user system */
+    --label:           rgba(255,255,255,0.85);
+    --label-2:         rgba(255,255,255,0.50);
+    --label-3:         rgba(255,255,255,0.25);
+    --separator:       rgba(255,255,255,0.08);
+    --fill:            rgba(255,255,255,0.05);
+    --fill-2:          rgba(255,255,255,0.08);
+    --systemRed:       #FF453A;
+    --systemGreen:     #30D158;
+    --systemOrange:    #FF9F0A;
+    --bg-window:       #2A2A2A;
+    --bg-toolbar:      linear-gradient(to bottom, #3C3C3C 0%, #303030 100%);
+    --bg-content:      #1C1C1C;
+    --bg-statusbar:    linear-gradient(to bottom, #323232 0%, #282828 100%);
+  }
+
+  /* ─── Prototype nav ─── */
+  .proto-nav {
+    display: flex; gap: 5px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 20px; padding: 5px 7px;
+  }
+  .proto-nav button {
+    border: none; background: transparent;
+    color: rgba(255,255,255,0.35);
+    font-size: 11.5px; font-weight: 500;
+    padding: 4px 12px; border-radius: 14px; cursor: pointer;
+  }
+  .proto-nav button.active {
+    background: rgba(255,255,255,0.14); color: var(--label);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+
+  /* ─── Window ─── */
+  .window {
+    width: 580px;
+    background: var(--bg-window);
+    border-radius: 10px;
+    box-shadow: 0 0 0 0.5px rgba(0,0,0,0.7), 0 12px 40px rgba(0,0,0,0.5);
+    overflow: hidden; display: flex; flex-direction: column;
+  }
+
+  /* ─── Unified toolbar ─── */
+  .toolbar {
+    height: 52px;
+    background: var(--bg-toolbar);
+    border-bottom: 1px solid var(--separator);
+    display: flex; align-items: center; padding: 0 12px;
+    position: relative; flex-shrink: 0; user-select: none;
+  }
+  .traffic-lights { display: flex; gap: 6px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot-close { background: #FE5F57; }
+  .dot-min   { background: #FEBC2E; }
+  .dot-max   { background: #27C93F; }
+  .toolbar-title {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    font-size: 13px; font-weight: 600; color: var(--label);
+    letter-spacing: -0.01em; white-space: nowrap;
+    display: flex; align-items: center; gap: 6px; pointer-events: none;
+  }
+  .toolbar-actions { margin-left: auto; display: flex; align-items: center; gap: 2px; }
+  .tb-btn {
+    background: none; border: none; color: var(--label-2);
+    border-radius: 5px; padding: 5px 8px;
+    font-size: 12px; font-weight: 500; cursor: pointer;
+    display: flex; align-items: center; gap: 5px; transition: background .1s;
+  }
+  .tb-btn:hover { background: var(--fill-2); color: var(--label); }
+
+  /* ─── Content ─── */
+  .content {
+    flex: 1; background: var(--bg-content);
+    display: flex; flex-direction: column;
+  }
+
+  /* ─── Empty drop zone ─── */
+  .drop-zone {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 10px; padding: 40px 32px; cursor: default;
+    transition: background .15s;
+  }
+  .drop-zone.drag-over {
+    background: rgba(10,132,255,0.06);
+    outline: 2px dashed rgba(10,132,255,0.35);
+    outline-offset: -10px; border-radius: 4px;
+  }
+  /* Colored document icon — more visible, branded */
+  .drop-icon-wrap { margin-bottom: 6px; }
+  .drop-label {
+    font-size: 15px; font-weight: 600; color: var(--label); letter-spacing: -0.01em;
+  }
+  /* Remove sub-label text — chips carry the format info */
+
+  /* HIG standard push button: height 32px, radius 5px */
+  .btn-default {
+    background: var(--accent); color: white; border: none;
+    border-radius: 5px; height: 32px; padding: 0 20px;
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    margin-top: 8px; letter-spacing: -0.01em;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+    transition: filter .1s;
+  }
+  .btn-default:hover { filter: brightness(1.12); }
+
+  /* Format chips — single presentation only */
+  .formats-row { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; margin-top: 4px; }
+  .format-pill {
+    font-size: 11px; font-weight: 500; letter-spacing: 0.04em;
+    color: var(--label-2); background: var(--fill-2);
+    padding: 3px 9px; border-radius: 4px;
+    border: 0.5px solid rgba(255,255,255,0.1);
+  }
+
+  /* ─── File table ─── */
+  .file-table-wrap {
+    display: none; flex-direction: column; flex: 1; overflow: hidden;
+  }
+  .file-table-wrap.drag-over {
+    outline: 2px dashed rgba(10,132,255,0.35); outline-offset: -4px;
+  }
+  /* Scrollable list */
+  .file-list {
+    flex: 1; overflow-y: auto;
+    /* macOS scrollbar styling */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.2) transparent;
+  }
+  .file-list::-webkit-scrollbar { width: 6px; }
+  .file-list::-webkit-scrollbar-track { background: transparent; }
+  .file-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 3px; }
+
+  /* HIG two-line row: 52px */
+  .file-row {
+    display: flex; align-items: center;
+    padding: 0 14px; min-height: 52px; gap: 10px;
+    border-bottom: 1px solid var(--separator);
+    transition: background .08s; cursor: default;
+  }
+  .file-row:last-child { border-bottom: none; }
+  .file-row:hover { background: var(--fill); }
+
+  /* ─── File type icon ─── */
+  .file-icon {
+    width: 30px; height: 36px; border-radius: 3px;
+    display: flex; align-items: flex-end; justify-content: center;
+    padding-bottom: 4px; font-size: 7.5px; font-weight: 800; letter-spacing: 0.04em;
+    flex-shrink: 0; position: relative;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.45);
+  }
+  .file-icon::before {
+    content: ''; position: absolute; top: 0; right: 0;
+    border-style: solid; border-width: 6px; border-radius: 0 2px 0 0;
+  }
+  .icon-pdf  { background: #4A1515; color: #FF6B6B; }
+  .icon-pdf::before  { border-color: #7A2020 #1C1C1C #7A2020 #7A2020; }
+  .icon-doc  { background: #132040; color: #6B9FFF; }
+  .icon-doc::before  { border-color: #1E3570 #1C1C1C #1E3570 #1E3570; }
+  .icon-epub { background: #3A2010; color: #FFB855; }
+  .icon-epub::before { border-color: #6A3820 #1C1C1C #6A3820 #6A3820; }
+  .icon-xlsx { background: #0A2818; color: #4ADF88; }
+  .icon-xlsx::before { border-color: #104228 #1C1C1C #104228 #104228; }
+  .icon-txt  { background: #282828; color: #AAAAAA; }
+  .icon-txt::before  { border-color: #444444 #1C1C1C #444444 #444444; }
+  .icon-rtf  { background: #282840; color: #9999FF; }
+  .icon-rtf::before  { border-color: #404060 #1C1C1C #404060 #404060; }
+
+  /* ─── File row content ─── */
+  .file-details { flex: 1; min-width: 0; }
+  .file-name {
+    font-size: 13px; font-weight: 400; color: var(--label);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.005em;
+  }
+  .file-sub { display: flex; align-items: center; gap: 0; margin-top: 2px; flex-wrap: nowrap; }
+  .file-size { font-size: 11px; color: var(--label-3); white-space: nowrap; }
+  .sub-sep { font-size: 11px; color: var(--label-3); margin: 0 5px; }
+
+  /* Destination path — "Save to: path" */
+  .save-to {
+    display: flex; align-items: center; gap: 3px;
+    font-size: 11px; color: var(--label-3);
+    cursor: pointer; border-radius: 3px;
+    padding: 1px 5px; margin-left: -3px;
+    transition: background .1s, color .1s;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 240px;
+  }
+  .save-to:hover { background: var(--fill-2); color: var(--label-2); }
+  .save-to-label { font-size: 11px; color: var(--label-3); white-space: nowrap; }
+  .save-to-path  { color: var(--label-2); direction: rtl; unicode-bidi: plaintext; }
+
+  /* Open in Finder link (Done state, same position as save-to) */
+  .open-link {
+    font-size: 11.5px; font-weight: 400; color: var(--accent);
+    background: none; border: none; cursor: pointer;
+    text-decoration: none; letter-spacing: -0.01em;
+    padding: 1px 0; opacity: 0.85;
+    transition: opacity .1s;
+    white-space: nowrap;
+  }
+  .open-link:hover { opacity: 1; text-decoration: underline; }
+
+  /* Error detail row — message only, no action buttons */
+  .error-detail-row {
+    display: none;
+    padding: 9px 14px 11px 54px;
+    background: rgba(255,69,58,0.07);
+    border-bottom: 1px solid rgba(255,69,58,0.12);
+  }
+  .error-detail-row.open { display: block; }
+  .err-title { font-size: 12px; font-weight: 600; color: var(--systemRed); margin-bottom: 3px; }
+  .err-body  { font-size: 11px; color: var(--label-3); line-height: 1.55; }
+
+  /* Status column */
+  .file-status-col {
+    flex-shrink: 0; display: flex; align-items: center; gap: 6px;
+    min-width: 90px; justify-content: flex-end;
+  }
+  .st { font-size: 12px; }
+  .st-waiting    { color: var(--label-3); }
+  .st-converting { color: var(--label-2); display: flex; align-items: center; gap: 5px; }
+  .st-done       { color: var(--systemGreen); }
+  .st-error      { color: var(--systemRed); }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner {
+    width: 11px; height: 11px;
+    border: 1.5px solid rgba(255,255,255,0.12);
+    border-top-color: var(--label-2);
+    border-radius: 50%;
+    animation: spin 0.65s linear infinite;
+    display: inline-block; flex-shrink: 0;
+  }
+
+  /* ─── Add more row ─── */
+  .add-row {
+    display: flex; align-items: center; gap: 6px;
+    padding: 0 14px; height: 32px;
+    border-top: 1px solid var(--separator);
+    cursor: pointer; transition: background .08s;
+    color: var(--label-3); font-size: 12px; flex-shrink: 0;
+  }
+  .add-row:hover { background: var(--fill); color: var(--label-2); }
+
+  /* ─── Progress strip ─── */
+  .progress-strip {
+    display: none; flex-direction: column; gap: 5px;
+    padding: 9px 16px;
+    background: var(--fill);
+    border-top: 1px solid var(--separator); flex-shrink: 0;
+  }
+  .progress-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--label-3); }
+  .progress-track  { height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+  .progress-fill   {
+    height: 100%;
+    background: var(--accent); /* system accent */
+    border-radius: 2px; transition: width .35s ease;
+  }
+
+  /* ─── Done banner ─── */
+  .done-banner {
+    display: none; align-items: center; gap: 8px;
+    padding: 9px 16px;
+    background: var(--fill);
+    border-top: 1px solid var(--separator); flex-shrink: 0;
+  }
+  .done-banner.visible { display: flex; }
+  .done-banner-text { flex: 1; }
+  .done-banner-title { font-size: 12px; font-weight: 500; color: var(--label-2); }
+  .done-banner-sub   { font-size: 11px; color: var(--label-3); margin-top: 1px; }
+
+  /* ─── Status bar ─── */
+  .statusbar {
+    height: 28px;
+    background: var(--bg-statusbar);
+    border-top: 1px solid var(--separator);
+    display: flex; align-items: center;
+    padding: 0 10px; gap: 6px; flex-shrink: 0;
+  }
+  .status-text { font-size: 11px; color: var(--label-3); flex: 1; }
+  .status-text strong { color: var(--label-2); font-weight: 500; }
+
+  /* HIG push buttons — 22px height (small), proper horizontal padding */
+  .sb-btn {
+    height: 22px; padding: 0 16px;
+    font-size: 12px; font-weight: 500; letter-spacing: -0.01em;
+    border-radius: 5px; cursor: pointer; border: none;
+    transition: filter .1s; white-space: nowrap; flex-shrink: 0;
+  }
+  .sb-btn:hover:not(:disabled)  { filter: brightness(1.1); }
+  .sb-btn:active:not(:disabled) { filter: brightness(0.9); }
+  .sb-btn:disabled { opacity: 0.3; cursor: default; filter: none !important; }
+
+  /* Primary = system accent color */
+  .sb-btn-default {
+    background: var(--accent); color: white; padding: 0 20px;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.12);
+  }
+  /* Normal secondary */
+  .sb-btn-normal {
+    background: linear-gradient(to bottom, #505050, #404040);
+    color: var(--label-2); border: 0.5px solid rgba(255,255,255,0.12);
+  }
+</style>
+</head>
+<body>
+
+<div class="proto-nav">
+  <button class="active" onclick="setState('empty')">Empty</button>
+  <button onclick="setState('loaded')">Files loaded</button>
+  <button onclick="setState('converting')">Converting</button>
+  <button onclick="setState('done')">Done</button>
+</div>
+
+<div class="window">
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="traffic-lights">
+      <div class="dot dot-close"></div>
+      <div class="dot dot-min"></div>
+      <div class="dot dot-max"></div>
+    </div>
+    <div class="toolbar-title">
+      <svg width="15" height="17" viewBox="0 0 18 20" fill="none">
+        <path d="M9 1L1.5 4.5V9.5C1.5 13.7 4.7 17.7 9 19C13.3 17.7 16.5 13.7 16.5 9.5V4.5L9 1Z"
+          fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.35)" stroke-width="1.2"/>
+        <path d="M5.5 10L7.8 12.5L12.5 7.5" stroke="rgba(255,255,255,0.5)" stroke-width="1.4"
+          stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      MarkSign Converter
+    </div>
+    <div class="toolbar-actions">
+      <button class="tb-btn" id="tb-add" style="display:none" onclick="alert('Opens Finder file picker')">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Add Files
+      </button>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- EMPTY STATE -->
+    <div class="drop-zone" id="drop-zone" onclick="setState('loaded')">
+      <!-- Colored document icon with markdown badge -->
+      <div class="drop-icon-wrap">
+        <svg width="72" height="80" viewBox="0 0 72 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Document shadow -->
+          <rect x="8" y="10" width="48" height="60" rx="5" fill="rgba(0,0,0,0.3)"/>
+          <!-- Document body -->
+          <rect x="6" y="7" width="48" height="60" rx="5" fill="#2C3E6A"/>
+          <!-- Folded corner -->
+          <path d="M42 7H54V19L42 7Z" fill="#1A2850"/>
+          <path d="M42 7L54 19H42V7Z" fill="#3D5180"/>
+          <!-- Lines -->
+          <line x1="14" y1="26" x2="46" y2="26" stroke="rgba(255,255,255,0.2)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="14" y1="33" x2="40" y2="33" stroke="rgba(255,255,255,0.2)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="14" y1="40" x2="44" y2="40" stroke="rgba(255,255,255,0.2)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="14" y1="47" x2="36" y2="47" stroke="rgba(255,255,255,0.2)" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- Accent badge: arrow down in circle -->
+          <circle cx="54" cy="62" r="14" fill="#1C1C1C"/>
+          <circle cx="54" cy="62" r="13" fill="#0A84FF"/>
+          <path d="M49 61L54 66L59 61M54 55V66" stroke="white" stroke-width="2.2"
+            stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="drop-label">Drop files to convert</span>
+      <button class="btn-default" onclick="setState('loaded');event.stopPropagation()">Select Files…</button>
+      <!-- Format chips — single occurrence -->
+      <div class="formats-row">
+        <span class="format-pill">PDF</span>
+        <span class="format-pill">DOCX</span>
+        <span class="format-pill">PPTX</span>
+        <span class="format-pill">EPUB</span>
+        <span class="format-pill">XLSX</span>
+        <span class="format-pill">TXT</span>
+        <span class="format-pill">RTF</span>
+      </div>
+    </div>
+
+    <!-- FILE TABLE -->
+    <div class="file-table-wrap" id="file-table-wrap">
+      <div class="file-list" id="file-list"></div>
+      <div class="add-row" id="add-row" onclick="alert('Opens Finder file picker')">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Add more files…
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-strip" id="progress-strip">
+      <div class="progress-labels">
+        <span id="progress-label">Converting 4 of 10…</span>
+        <span id="progress-pct">40%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill" style="width:40%"></div>
+      </div>
+    </div>
+
+    <!-- Done banner -->
+    <div class="done-banner" id="done-banner"></div>
+
+  </div>
+
+  <!-- Status Bar -->
+  <div class="statusbar">
+    <span class="status-text" id="status-text">No files selected</span>
+    <button class="sb-btn sb-btn-normal" id="btn-clear"   style="display:none" onclick="setState('empty')">Clear</button>
+    <button class="sb-btn sb-btn-default" id="btn-convert" disabled onclick="setState('converting')">Convert</button>
+  </div>
+
+</div>
+
+<script>
+const ICON = { PDF:"icon-pdf", DOC:"icon-doc", DOCX:"icon-doc", PPTX:"icon-doc", EPUB:"icon-epub", XLSX:"icon-xlsx", TXT:"icon-txt", RTF:"icon-rtf" };
+
+// 10 files for realistic simulation
+const FILES_LOADED = [
+  { name:"Annual-Report-2024.pdf",       ext:"PDF",  size:"4.2 MB",  path:"~/Downloads/" },
+  { name:"Product-Brief.docx",           ext:"DOCX", size:"348 KB",  path:"~/Desktop/" },
+  { name:"DesignSystemGuide.epub",       ext:"EPUB", size:"2.1 MB",  path:"…/Documents/Reports/Q4/" },
+  { name:"Q4-Metrics.xlsx",             ext:"XLSX", size:"195 KB",  path:"~/Downloads/" },
+  { name:"Research-Notes.txt",           ext:"TXT",  size:"22 KB",   path:"…/Research/Notes/Field/" },
+  { name:"UserInterview-Transcript.pdf", ext:"PDF",  size:"1.8 MB",  path:"…/Projects/2024/UX/" },
+  { name:"Brand-Guidelines.pdf",         ext:"PDF",  size:"8.4 MB",  path:"~/Desktop/" },
+  { name:"Database-Export.xlsx",         ext:"XLSX", size:"2.7 MB",  path:"~/Downloads/" },
+  { name:"Chapter-01.epub",              ext:"EPUB", size:"512 KB",  path:"…/Books/Reading/" },
+  { name:"Meeting-Notes-Apr.txt",        ext:"TXT",  size:"15 KB",   path:"…/Meetings/2024/April/" },
+];
+
+const FILES_CONVERTING = FILES_LOADED.map((f, i) => ({
+  ...f,
+  st: i < 3 ? "done" : i < 5 ? "converting" : "waiting"
+}));
+
+const FILES_DONE = FILES_LOADED.map((f, i) => ({
+  ...f,
+  st: i === 3 ? "error" : "done",
+  ...(i === 3 ? {
+    errTitle: "Could not read this file.",
+    errBody:  "The file appears to be password-protected or corrupted. Remove the password in Excel, then try again."
+  } : {})
+}));
+
+// ─── Render ───────────────────────────────────────────────────
+
+function rowHTML(f, i, mode) {
+  const icon = `<div class="file-icon ${ICON[f.ext]||'icon-txt'}">${f.ext}</div>`;
+
+  // Sub-row content depends on mode
+  let sub = `<span class="file-size">${f.size}</span>`;
+
+  if (mode === 'loaded') {
+    sub += `<span class="sub-sep">·</span>
+      <span class="save-to" onclick="alert('Opens folder picker for this file')" title="${f.path}">
+        <span class="save-to-label">Save to:</span>&nbsp;<span class="save-to-path">${f.path}</span>&nbsp;
+        <svg width="9" height="9" viewBox="0 0 10 10" fill="none">
+          <path d="M3 1.5L7 5L3 8.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>`;
+  } else if (mode === 'done') {
+    // Open in Finder link in sub-row for all done files
+    if (f.st === 'done' || f.st === 'error') {
+      sub += `<span class="sub-sep">·</span>
+        <button class="open-link" onclick="alert('Reveals ${f.name} in Finder')">Open in Finder</button>`;
+    }
+  }
+
+  // Status column
+  let status = '';
+  if (mode === 'loaded') {
+    status = `<span class="st st-waiting">Waiting</span>`;
+  } else if (mode === 'converting') {
+    const s = f.st;
+    if (s === 'done')       status = `<span class="st st-done">✓ Converted</span>`;
+    else if (s === 'converting') status = `<span class="st st-converting"><span class="spinner"></span>Converting</span>`;
+    else                    status = `<span class="st st-waiting">Waiting</span>`;
+  } else if (mode === 'done') {
+    if (f.st === 'done')  status = `<span class="st st-done">✓ Converted</span>`;
+    else                  status = `<span class="st st-error">Error</span>`;
+  }
+
+  const errorRow = (mode === 'done' && f.st === 'error' && f.errTitle) ? `
+    <div class="error-detail-row open" id="err-${i}">
+      <div class="err-title">${f.errTitle}</div>
+      <div class="err-body">${f.errBody}</div>
+    </div>` : '';
+
+  return `
+    <div class="file-row" id="fr-${i}">
+      ${icon}
+      <div class="file-details">
+        <div class="file-name">${f.name}</div>
+        <div class="file-sub">${sub}</div>
+      </div>
+      <div class="file-status-col">${status}</div>
+    </div>${errorRow}`;
+}
+
+function renderFiles(data, mode) {
+  document.getElementById('file-list').innerHTML = data.map((f,i) => rowHTML(f, i, mode)).join('');
+}
+
+// ─── State ────────────────────────────────────────────────────
+
+let timer = null;
+
+function setState(s) {
+  if (timer) { clearTimeout(timer); timer = null; }
+
+  ['empty','loaded','converting','done'].forEach((n,i) =>
+    document.querySelectorAll('.proto-nav button')[i].classList.toggle('active', n === s));
+
+  const dz      = document.getElementById('drop-zone');
+  const ftw     = document.getElementById('file-table-wrap');
+  const addRow  = document.getElementById('add-row');
+  const progSt  = document.getElementById('progress-strip');
+  const doneBan = document.getElementById('done-banner');
+  const btnConv = document.getElementById('btn-convert');
+  const btnClr  = document.getElementById('btn-clear');
+  const tbAdd   = document.getElementById('tb-add');
+  const stText  = document.getElementById('status-text');
+
+  dz.style.display      = 'none';
+  ftw.style.display     = 'none';
+  addRow.style.display  = 'none';
+  progSt.style.display  = 'none';
+  doneBan.classList.remove('visible');
+  btnClr.style.display  = 'none';
+  tbAdd.style.display   = 'none';
+  btnConv.disabled      = true;
+  btnConv.textContent   = 'Convert';
+  btnConv.style.display = '';
+  btnConv.onclick       = () => setState('converting');
+
+  switch (s) {
+
+    case 'empty':
+      dz.style.display = 'flex';
+      stText.innerHTML = 'No files selected';
+      break;
+
+    case 'loaded':
+      ftw.style.display = 'flex';
+      addRow.style.display = 'flex';
+      tbAdd.style.display = 'flex';
+      renderFiles(FILES_LOADED, 'loaded');
+      btnConv.disabled = false;
+      stText.innerHTML = '<strong>10 files</strong> selected';
+      break;
+
+    case 'converting':
+      ftw.style.display = 'flex';
+      progSt.style.display = 'flex';
+      renderFiles(FILES_CONVERTING, 'converting');
+      document.getElementById('progress-fill').style.width = '40%';
+      document.getElementById('progress-label').textContent = 'Converting 4 of 10…';
+      document.getElementById('progress-pct').textContent = '40%';
+      btnConv.disabled = true;
+      btnConv.textContent = 'Converting…';
+      stText.innerHTML = 'Please wait…';
+      timer = setTimeout(() => setState('done'), 1800);
+      break;
+
+    case 'done': {
+      ftw.style.display = 'flex';
+      doneBan.classList.add('visible');
+      renderFiles(FILES_DONE, 'done');
+
+      const okN  = FILES_DONE.filter(f => f.st === 'done').length;
+      const hasE = FILES_DONE.some(f => f.st === 'error');
+
+      doneBan.innerHTML = hasE ? `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,159,10,0.8)"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        <div class="done-banner-text">
+          <div class="done-banner-title">${okN} of 10 converted — 1 needs attention</div>
+          <div class="done-banner-sub">Use "Open in Finder" on the error file to fix it, then convert again</div>
+        </div>
+      ` : `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(48,209,88,0.8)"
+          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <div class="done-banner-text">
+          <div class="done-banner-title">All ${okN} files converted</div>
+          <div class="done-banner-sub">Markdown files saved beside the originals</div>
+        </div>
+      `;
+
+      btnConv.style.display = 'none';
+      btnClr.style.display  = '';
+      stText.innerHTML = hasE
+        ? `${okN} converted · <span style="color:var(--systemRed)">1 error</span>`
+        : `All ${okN} converted`;
+      break;
+    }
+  }
+}
+
+setState('empty');
+
+// Drop interactions
+const dz = document.getElementById('drop-zone');
+['dragover','dragenter'].forEach(e =>
+  dz.addEventListener(e, ev => { ev.preventDefault(); dz.classList.add('drag-over'); }));
+['dragleave','drop'].forEach(e =>
+  dz.addEventListener(e, ev => { ev.preventDefault(); dz.classList.remove('drag-over');
+    if(e==='drop') setState('loaded'); }));
+const ftw = document.getElementById('file-table-wrap');
+['dragover','dragenter'].forEach(e =>
+  ftw.addEventListener(e, ev => { ev.preventDefault(); ftw.classList.add('drag-over'); }));
+['dragleave','drop'].forEach(e =>
+  ftw.addEventListener(e, ev => { ev.preventDefault(); ftw.classList.remove('drag-over');
+    if(e==='drop') alert('Adds dragged files to list'); }));
+</script>
+</body>
+</html>
