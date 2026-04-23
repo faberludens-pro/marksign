@@ -81,14 +81,23 @@
       max-width: 1100px; margin: 0 auto; padding: 0 2.5rem;
       display: grid;
       grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto;
+      grid-template-areas: "copy shot" "cta  req";
       align-items: start;
-      gap: 3rem;
+      column-gap: 3rem;
+      row-gap: 1.25rem;
     }
     @media (max-width: 720px) {
-      .hero-inner { grid-template-columns: 1fr; }
-      .hero-shot { display: none; }
+      .hero-inner {
+        grid-template-columns: 1fr;
+        grid-template-areas: "copy" "cta";
+      }
+      .hero-shot, .hero-req { display: none; }
     }
-    .hero-text { display: flex; flex-direction: column; gap: 0; }
+    .hero-text { grid-area: copy; display: flex; flex-direction: column; gap: 0; }
+    .hero-shot { grid-area: shot; }
+    .hero-cta-row { grid-area: cta; }
+    .hero-req-row { grid-area: req; text-align: center; }
     .hero-brand {
       display: flex; align-items: center; gap: 0.6rem;
       margin-bottom: 2rem;
@@ -323,19 +332,21 @@
         <h1>Convert your documents<em>to Markdown, locally</em></h1>
         <div class="hero-rule"></div>
         <p class="hero-sub">Clean, structured Markdown for your AI agents, notes apps, and repositories.</p>
-        <div class="hero-cta" style="margin-top:1.75rem;">
-          <button class="btn-dl" onclick="document.getElementById('dl-modal').showModal()">
-            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
-              <path d="M7.5 1v8.5M4 7l3.5 3.5L11 7M2 13h11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            Download Now — Free
-          </button>
-        </div>
       </div>
       <div class="hero-shot">
         <img src="marksign-initial.png" alt="MarkSign app — drop files to convert">
-        <p class="req" style="color:rgba(146,141,135,0.8);margin-top:0.75rem;text-align:center;">macOS 13 or later &nbsp;·&nbsp; Apple Silicon &amp; Intel &nbsp;·&nbsp; 96 MB</p>
-        <p class="req" style="color:rgba(146,141,135,0.7);margin-top:0.4rem;text-align:center;">
+      </div>
+      <div class="hero-cta-row">
+        <button class="btn-dl" onclick="document.getElementById('dl-modal').showModal()">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+            <path d="M7.5 1v8.5M4 7l3.5 3.5L11 7M2 13h11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Download Now — Free
+        </button>
+      </div>
+      <div class="hero-req-row">
+        <p class="req" style="color:rgba(146,141,135,0.8);">macOS 13 or later &nbsp;·&nbsp; Apple Silicon &amp; Intel &nbsp;·&nbsp; 96 MB</p>
+        <p class="req" style="color:rgba(146,141,135,0.7);margin-top:0.4rem;">
           macOS may show a security warning on first open.<br>
           Right-click the app → <strong style="color:rgba(160,152,144,0.9)">Open</strong> → Open to bypass it.
         </p>
