@@ -650,7 +650,7 @@ class MarkSignWindow:
 
         chips_frame = ctk.CTkFrame(inner, fg_color="transparent")
         chips_frame.pack()
-        for fmt in ["PDF", "DOC", "DOCX", "PPTX", "EPUB", "XLSX", "TXT", "RTF"]:
+        for fmt in ["PDF", "DOC", "DOCX", "PPTX", "EPUB", "XLS", "XLSX", "TXT", "RTF"]:
             ctk.CTkLabel(
                 chips_frame, text=fmt, font=FONT_TINY,
                 text_color=LABEL_2, fg_color="#2E2E2E",
@@ -749,7 +749,7 @@ class MarkSignWindow:
             parent=self.root,
             title="Select files to convert",
             filetypes=[
-                ("Supported formats", "*.pdf *.doc *.docx *.pptx *.epub *.xlsx *.txt *.rtf"),
+                ("Supported formats", "*.pdf *.doc *.docx *.pptx *.epub *.xls *.xlsx *.txt *.rtf"),
                 ("All files", "*.*"),
             ]
         )
@@ -785,7 +785,7 @@ class MarkSignWindow:
 
     def _show_unsupported_notice(self, exts_str: str):
         self._status_label.configure(
-            text=f"⚠  {exts_str} not supported — use PDF, DOC, DOCX, PPTX, EPUB, XLSX, TXT, RTF",
+            text=f"⚠  {exts_str} not supported — use PDF, DOC, DOCX, PPTX, EPUB, XLS, XLSX, TXT, RTF",
             text_color="#FF9F0A"
         )
         # Clear after 5 s, restoring appropriate text
