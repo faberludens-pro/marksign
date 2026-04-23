@@ -251,7 +251,7 @@ CONVERTER_CHAIN = {
 }
 
 # Formats shown in UI (for validation and format chip display)
-SUPPORTED_FORMATS_V1 = {".pdf", ".docx", ".pptx", ".epub", ".xlsx", ".txt", ".rtf"}
+SUPPORTED_FORMATS_V1 = {".pdf", ".doc", ".docx", ".pptx", ".epub", ".xlsx", ".txt", ".rtf"}
 
 
 # ── Public API ───────────────────────────────────────────────────────────────
