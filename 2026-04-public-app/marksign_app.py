@@ -67,7 +67,7 @@ except Exception:
 from AppKit import (
     NSStatusBar, NSVariableStatusItemLength, NSImage,
     NSMenu, NSMenuItem, NSApplication as _NSApp,
-    NSWorkspace,
+    NSWorkspace, NSEvent,
 )
 from Foundation import NSData, NSObject, NSURL
 from PIL import Image, ImageDraw
@@ -216,33 +216,38 @@ def _make_file_icon(ext: str) -> "ctk.CTkImage":
     if ext in _FILE_ICON_CACHE:
         return _FILE_ICON_CACHE[ext]
 
-    # .md → dark document shape with large centred B&W logo, no text label
-    if ext == ".md":
+    # .md / .md-done → document shape with large centred logo
+    # .md-done uses a green-tinted body to signal successful conversion
+    if ext in (".md", ".md-done"):
         W, H, fold, r = 60, 72, 14, 6
         img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
         d   = ImageDraw.Draw(img)
-        # Dark charcoal body
         d.rounded_rectangle([0, 0, W, H], radius=r, fill=_hex("#222222"))
         d.polygon([(W - fold, 0), (W, 0), (W, fold)], fill=_hex("#444444"))
         d.line([(r, H - 1), (W - r, H - 1)], fill=(0, 0, 0, 80), width=1)
-        # Large B&W logo — fills most of the document face
+        # Large logo — fills most of the document face
         try:
             shield_size = 48
-            src = Image.open(_LOGO_PATH).convert("RGB").resize(
-                (shield_size, shield_size), Image.LANCZOS)
-            bw = Image.new("RGBA", (shield_size, shield_size), (0, 0, 0, 0))
-            src_px = src.load()
-            bw_px  = bw.load()
-            for sy in range(shield_size):
-                for sx in range(shield_size):
-                    rr, gg, bb = src_px[sx, sy]
-                    lum = int(0.299 * rr + 0.587 * gg + 0.114 * bb)
-                    if lum > 50:
-                        alpha = min(255, (lum - 50) * 3)
-                        bw_px[sx, sy] = (255, 255, 255, alpha)
+            src = Image.open(_LOGO_PATH).resize(
+                (shield_size, shield_size), Image.LANCZOS).convert("RGBA")
             ox = (W - shield_size) // 2
             oy = (H - shield_size) // 2
-            img.paste(bw, (ox, oy), bw)
+            if ext == ".md-done":
+                # Full-colour logo for converted files
+                img.paste(src, (ox, oy), src)
+            else:
+                # B&W (white) logo for neutral .md icon
+                bw = Image.new("RGBA", (shield_size, shield_size), (0, 0, 0, 0))
+                src_px = src.load()
+                bw_px  = bw.load()
+                for sy in range(shield_size):
+                    for sx in range(shield_size):
+                        rr, gg, bb, aa = src_px[sx, sy]
+                        lum = int(0.299 * rr + 0.587 * gg + 0.114 * bb)
+                        if lum > 50:
+                            alpha = min(255, int(aa * (lum - 50) / 205))
+                            bw_px[sx, sy] = (255, 255, 255, alpha)
+                img.paste(bw, (ox, oy), bw)
         except Exception:
             pass
         icon = ctk.CTkImage(light_image=img, dark_image=img, size=(30, 36))
@@ -478,7 +483,7 @@ class MarkSignWindow:
 
     def build(self):
         self.root = _CTkRoot()
-        self.root.title("MarkSign")
+        self.root.title("")
         self.root.update_idletasks()
         sw = self.root.winfo_screenwidth()
         sh = self.root.winfo_screenheight()
@@ -494,6 +499,9 @@ class MarkSignWindow:
         self._build_statusbar()
         self._show_state("empty")
         self._poll_ui_queue()
+        # <MouseWheel> events don't fire in PyInstaller bundles on macOS.
+        # Use NSEvent local monitor to intercept trackpad scroll directly.
+        self._setup_ns_scroll()
 
         # Drag-and-drop (optional — needs tkdnd)
         for _dnd_target in (self.root, self._content):
@@ -600,9 +608,22 @@ class MarkSignWindow:
         inner = ctk.CTkFrame(self._frame_empty, fg_color="transparent")
         inner.place(relx=0.5, rely=0.5, anchor="center")
 
+        # ── Wordmark: shield + Mark (white) + Sign (orange) ────────────────
+        wordmark = ctk.CTkFrame(inner, fg_color="transparent")
+        wordmark.pack(pady=(0, 20))
+        logo_img = self._make_logo_badge(40)
+        ctk.CTkLabel(wordmark, image=logo_img, text="",
+                     fg_color="transparent").pack(side="left", padx=(0, 10))
+        _wm_font = ctk.CTkFont(family="Iowan Old Style", size=30,
+                               weight="bold", slant="italic")
+        ctk.CTkLabel(wordmark, text="Mark", font=_wm_font,
+                     text_color=LABEL, fg_color="transparent").pack(side="left")
+        ctk.CTkLabel(wordmark, text="Sign", font=_wm_font,
+                     text_color="#E0601A", fg_color="transparent").pack(side="left")
+
         # ── Orientation headline ────────────────────────────────────────────
         ctk.CTkLabel(
-            inner, text="Convert any document to Markdown",
+            inner, text="Convert your documents to Markdown, locally",
             font=("SF Pro Display", 20, "bold"), text_color=LABEL,
             fg_color="transparent"
         ).pack(pady=(0, 24))
@@ -813,6 +834,14 @@ class MarkSignWindow:
         for i, entry in enumerate(self._files):
             bg = BG_ROW if i % 2 == 0 else BG_ROW_ALT
             self._build_row(entry, bg)
+        # Force scrollregion update after geometry settles —
+        # CTkScrollableFrame's own Configure bind only fires on outer resize,
+        # not when content is added programmatically.
+        self.root.after_idle(self._update_scrollregion)
+
+    def _update_scrollregion(self):
+        canvas = self._scroll._parent_canvas
+        canvas.configure(scrollregion=canvas.bbox("all"))
 
     def _build_row(self, entry: FileEntry, bg: str):
         # tk.Canvas: height=56 is absolute — never overridden by children.
@@ -821,7 +850,7 @@ class MarkSignWindow:
         row.pack(fill="x")
 
         # ── File type icon — vertically centered at row midpoint ───────────────
-        icon_ext = ".md" if entry.status == "done" else entry.path.suffix.lower()
+        icon_ext = ".md-done" if entry.status == "done" else entry.path.suffix.lower()
         icon_lbl = ctk.CTkLabel(row, image=_make_file_icon(icon_ext),
                                 text="", fg_color=bg)
         row.create_window(12, 28, window=icon_lbl, anchor="w")
@@ -941,6 +970,36 @@ class MarkSignWindow:
                                        window=status_lbl, anchor="e")
             row.bind("<Configure>",
                      lambda e, c=row, w=win_id: c.coords(w, e.width - 12, 28))
+
+    # ── Scroll — NSEvent local monitor (macOS PyInstaller fix) ───────────────
+    # <MouseWheel> events are not delivered to bundled Tk on macOS.
+    # We intercept NSScrollWheel events directly via pyobjc and drive the
+    # canvas from the main thread via root.after(0, ...).
+
+    def _setup_ns_scroll(self):
+        NSScrollWheel = 1 << 22   # NSEventMaskScrollWheel
+        window = self
+
+        def _handler(ns_event):
+            dy = ns_event.scrollingDeltaY()
+            if dy == 0:
+                return ns_event
+            # Schedule on Tk's main thread — NSEvent callbacks run on AppKit thread
+            direction = -1 if dy > 0 else 1
+            window.root.after(0, lambda d=direction: window._ns_scroll(d))
+            return ns_event
+
+        self._ns_scroll_monitor = NSEvent.addLocalMonitorForEventsMatchingMask_handler_(
+            NSScrollWheel, _handler
+        )
+
+    def _ns_scroll(self, direction: int):
+        if not self._scroll.winfo_ismapped():
+            return
+        canvas = self._scroll._parent_canvas
+        if canvas.yview() == (0.0, 1.0):
+            return
+        canvas.yview_scroll(direction * 3, "units")
 
     # ── Conversion ────────────────────────────────────────────────────────────
 
