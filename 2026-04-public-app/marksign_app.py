@@ -757,7 +757,7 @@ class MarkSignWindow:
             self.add_files([Path(p) for p in paths])
 
     def _on_drop(self, event):
-        paths = [Path(p.strip("{}")) for p in event.data.split()]
+        paths = [Path(p) for p in self.root.tk.splitlist(event.data)]
         self.add_files(paths)
 
     def add_files(self, paths: list[Path], show: bool = False):
@@ -1038,6 +1038,11 @@ class MarkSignWindow:
                             n += 1
                         entry.dest = dest
                     entry.dest.write_text(result["markdown"], encoding="utf-8")
+                    try:
+                        src_stat = entry.path.stat()
+                        os.utime(entry.dest, (src_stat.st_atime, src_stat.st_mtime))
+                    except OSError:
+                        pass
                     entry.status = "done"
                     entry.method = result["method"]
                     done_count += 1

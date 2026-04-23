@@ -194,6 +194,96 @@ def _convert_with_markitdown(path):
         return "", f"markitdown-error: {e}"
 
 
+def _clean_html_for_pandoc(html_path):
+    """Pre-process textutil HTML in-place before handing to pandoc.
+
+    Fixes:
+    - Removes Apple-specific spans (Apple-converted-space etc.)
+    - Strips leading/trailing whitespace inside <b> and <i> tags
+      so pandoc doesn't emit '** text**' with a spurious space.
+    """
+    import re
+    with open(html_path, "r", encoding="utf-8", errors="replace") as f:
+        html = f.read()
+    # Remove Apple span wrappers entirely (keep their text content)
+    html = re.sub(r'<span[^>]*class="Apple[^"]*"[^>]*>(.*?)</span>', r'\1', html)
+    # Strip only LEADING whitespace inside bold/italic tags
+    # so pandoc doesn't emit '** text**' with a spurious leading space.
+    # Trailing spaces are kept — they are meaningful separators.
+    html = re.sub(r'<b>\s+', '<b>', html)
+    html = re.sub(r'<i>\s+', '<i>', html)
+    with open(html_path, "w", encoding="utf-8") as f:
+        f.write(html)
+
+
+def _clean_pandoc_html_output(text):
+    """Remove Apple HTML artefacts that pandoc converts to markdown span syntax."""
+    import re
+    # Remove [text]{.classname} spans (e.g. [ ]{.Apple-converted-space})
+    text = re.sub(r'\[([^\]]*)\]\{[^}]+\}', r'\1', text)
+    # Fix ** text** → **text** (leading space inside opening bold marker only)
+    text = re.sub(r'\*\* +([^\s*])', r'**\1', text)
+    # Fix text ** → text** (trailing space before closing bold marker only)
+    text = re.sub(r'([^\s*]) +\*\*([^*])', r'\1**\2', text)
+    return text
+
+
+def _convert_with_textutil(path):
+    """Convert .doc using macOS textutil: doc→html→markdown.
+
+    textutil -convert html preserves bold/italic/headings; pandoc then renders
+    that HTML as proper Markdown. Falls back to markitdown on the HTML, then
+    plain text if neither is available.
+    """
+    import subprocess, tempfile, os, shutil
+    try:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            html_path = os.path.join(tmpdir, "out.html")
+            r = subprocess.run(
+                ["/usr/bin/textutil", "-convert", "html", "-output", html_path, str(path)],
+                capture_output=True, text=True, timeout=30,
+            )
+            if not os.path.exists(html_path):
+                return "", f"textutil-error: {r.stderr[:200]}"
+
+            # ── pre-clean HTML before pandoc ────────────────────────────────
+            _clean_html_for_pandoc(html_path)
+
+            # ── pandoc: HTML → Markdown (best quality) ──────────────────────
+            pandoc = shutil.which("pandoc") or "/opt/homebrew/bin/pandoc"
+            if pandoc and os.path.exists(pandoc):
+                pr = subprocess.run(
+                    [pandoc, "--from", "html", "--to", "markdown", "--wrap=none", html_path],
+                    capture_output=True, text=True, timeout=60,
+                )
+                if pr.returncode == 0 and pr.stdout.strip():
+                    return _clean_pandoc_html_output(pr.stdout), "textutil+pandoc"
+
+            # ── markitdown: HTML → Markdown (fallback) ───────────────────────
+            try:
+                from markitdown import MarkItDown
+                res = MarkItDown().convert(html_path)
+                text = res.text_content if hasattr(res, "text_content") else str(res)
+                if text.strip():
+                    return text, "textutil+markitdown"
+            except Exception:
+                pass
+
+            # ── plain text: last resort ──────────────────────────────────────
+            txt_path = os.path.join(tmpdir, "out.txt")
+            subprocess.run(
+                ["/usr/bin/textutil", "-convert", "txt", "-output", txt_path, str(path)],
+                capture_output=True, timeout=30,
+            )
+            if os.path.exists(txt_path):
+                with open(txt_path, "r", encoding="utf-8", errors="replace") as f:
+                    return f.read(), "textutil"
+
+            return "", "textutil-error: all paths failed"
+    except Exception as e:
+        return "", f"textutil-error: {e}"
+
+
 def _convert_with_libreoffice(path):
     """Convert using LibreOffice headless. Handles .doc and malformed Office files."""
     import subprocess, shutil, tempfile, os
@@ -240,7 +330,7 @@ def _convert_with_pandoc(path, to_format="markdown"):
 CONVERTER_CHAIN = {
     ".pdf":  [_convert_with_docling, _convert_with_pymupdf, _convert_with_markitdown],
     ".docx": [_convert_with_pandoc, _convert_with_markitdown, _convert_with_libreoffice],
-    ".doc":  [_convert_with_libreoffice, _convert_with_pandoc, _convert_with_markitdown],
+    ".doc":  [_convert_with_textutil, _convert_with_libreoffice, _convert_with_pandoc, _convert_with_markitdown],
     ".pptx": [_convert_with_markitdown],
     ".epub": [_convert_with_markitdown, _convert_with_pandoc],
     ".xlsx": [_convert_with_markitdown],
