@@ -17,7 +17,7 @@ ls -lh dist/MarkSign.app/Contents/MacOS/
 
 echo ""
 echo "── Creating DMG ──"
-DMG_NAME="MarkSign-0.1.1.dmg"
+DMG_NAME="MarkSign-0.1.2.dmg"
 rm -f "dist/$DMG_NAME"
 
 create-dmg \

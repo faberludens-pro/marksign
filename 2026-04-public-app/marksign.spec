@@ -251,8 +251,8 @@ app = BUNDLE(
     info_plist={
         "CFBundleName": "MarkSign",
         "CFBundleDisplayName": "MarkSign",
-        "CFBundleVersion": "0.1.0",
-        "CFBundleShortVersionString": "0.1",
+        "CFBundleVersion": "0.1.2",
+        "CFBundleShortVersionString": "0.1.2",
         "NSHighResolutionCapable": True,
         "NSRequiresAquaSystemAppearance": False,    # respect system dark mode
         "LSApplicationCategoryType": "public.app-category.productivity",

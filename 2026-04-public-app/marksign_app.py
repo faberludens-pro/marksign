@@ -988,9 +988,10 @@ class MarkSignWindow:
             dy = ns_event.scrollingDeltaY()
             if dy == 0:
                 return ns_event
-            # Schedule on Tk's main thread — NSEvent callbacks run on AppKit thread
+            # Route through thread-safe queue — AppKit thread must not call
+            # root.after() directly (Python 3.13 GIL/Tcl AfterProc SIGABRT).
             direction = -1 if dy > 0 else 1
-            window.root.after(0, lambda d=direction: window._ns_scroll(d))
+            window._ui_queue.put(lambda d=direction: window._ns_scroll(d))
             return ns_event
 
         self._ns_scroll_monitor = NSEvent.addLocalMonitorForEventsMatchingMask_handler_(
@@ -1457,7 +1458,7 @@ def _show_about(root: ctk.CTk):
                  text_color=LABEL, fg_color="transparent").pack()
     ctk.CTkLabel(dlg, text="Document to Markdown Converter",
                  font=FONT_SMALL, text_color=LABEL_2, fg_color="transparent").pack(pady=(2, 0))
-    ctk.CTkLabel(dlg, text="Version 1.0 (alpha)",
+    ctk.CTkLabel(dlg, text="Version 0.1.2",
                  font=FONT_TINY, text_color=LABEL_2, fg_color="transparent").pack(pady=(2, 16))
 
     ctk.CTkFrame(dlg, height=1, fg_color=SEPARATOR).pack(fill="x", padx=24)

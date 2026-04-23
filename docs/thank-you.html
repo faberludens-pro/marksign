@@ -40,10 +40,19 @@
       color: #fff; background: var(--orange); text-decoration: none;
       padding: 0.8rem 2rem; border-radius: 4px;
     }
-    .note {
-      margin-top: 1rem; font-size: 0.8rem; color: var(--ink-3);
-      line-height: 1.6;
+    .steps {
+      margin-top: 1.25rem; text-align: left;
+      background: #eeecea; border-radius: 6px;
+      padding: 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.5rem;
     }
+    .steps li {
+      display: flex; align-items: baseline; gap: 0.6rem;
+      font-size: 0.875rem; color: var(--ink-2); line-height: 1.5; list-style: none;
+    }
+    .steps li .n {
+      font-weight: 700; color: var(--orange); min-width: 1rem; flex-shrink: 0;
+    }
+    .steps li strong { color: var(--ink); font-weight: 600; }
     .brew {
       display: inline-block; margin-top: 1.5rem; text-align: left;
       background: #1a1917; color: #e8e4de; font-family: 'SF Mono', 'Fira Code', monospace;
@@ -67,17 +76,20 @@
       </svg>
     </div>
     <h1>Your download is starting</h1>
-    <p>MarkSign 0.1.1 for macOS is downloading now.<br>
+    <p>MarkSign 0.1.2 for macOS is downloading now.<br>
     We'll send you release notes at the email you provided.</p>
-    <a class="btn" href="https://github.com/faberludens-pro/marksign/releases/latest/download/MarkSign-0.1.1.dmg">
+    <a class="btn" href="https://github.com/faberludens-pro/marksign/releases/latest/download/MarkSign-0.1.2.dmg">
       <svg width="14" height="14" viewBox="0 0 15 15" fill="none" aria-hidden="true">
         <path d="M7.5 1v8.5M4 7l3.5 3.5L11 7M2 13h11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
       Download didn't start? Click here
     </a>
-    <p class="note">Open the DMG, drag MarkSign to Applications.<br>First launch: right-click MarkSign → Open.</p>
+    <ol class="steps">
+      <li><span class="n">1.</span><span>Open the DMG and drag <strong>MarkSign</strong> to Applications.</span></li>
+      <li><span class="n">2.</span><span><strong>Right-click MarkSign → Open</strong> on first launch. macOS will ask once — click Open.</span></li>
+    </ol>
 
-    <span class="brew-label">Or install with Homebrew — no prompts</span>
+    <span class="brew-label">Or install with Homebrew — no prompts, no right-click needed</span>
     <div class="brew">brew tap faberludens-pro/marksign<br>brew install --cask marksign</div>
 
     <a class="back" href="https://faberludens-pro.github.io/marksign/">← Back to MarkSign</a>
@@ -86,7 +98,7 @@
   <script>
     window.addEventListener('load', function() {
       setTimeout(function() {
-        window.location.href = 'https://github.com/faberludens-pro/marksign/releases/latest/download/MarkSign-0.1.1.dmg';
+        window.location.href = 'https://github.com/faberludens-pro/marksign/releases/latest/download/MarkSign-0.1.2.dmg';
       }, 800);
     });
   </script>
