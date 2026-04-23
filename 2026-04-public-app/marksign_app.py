@@ -495,6 +495,10 @@ class MarkSignWindow:
         self.root.configure(fg_color=BG_WINDOW)
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
 
+        # Re-open window: Cmd+N, dock icon click, and File > New Window
+        self.root.bind_all("<Command-n>", lambda e: self.show())
+        self.root.createcommand("::tk::mac::ReopenApplication", self.show)
+
         self._build_content()
         self._build_statusbar()
         self._show_state("empty")
@@ -1379,18 +1383,23 @@ def _offer_dmg_cleanup(root: ctk.CTk):
 
 class _AboutDelegate(NSObject):
     root_ = None
+    window_ = None
     def showAboutPanel_(self, sender):
         if self.root_:
             _show_about(self.root_)
+    def showWindow_(self, sender):
+        if self.window_:
+            self.window_.show()
 
 
 _about_delegate_ref = [None]   # keep alive
 
 
-def _fix_about_menu(root: ctk.CTk):
+def _fix_about_menu(root: ctk.CTk, window=None):
     """Replace the native 'About MarkSign' NSMenuItem with our custom dialog."""
     delegate = _AboutDelegate.alloc().init()
     delegate.root_ = root
+    delegate.window_ = window
     _about_delegate_ref[0] = delegate
 
     app = _NSApp.sharedApplication()
@@ -1410,6 +1419,20 @@ def _fix_about_menu(root: ctk.CTk):
             item.setTarget_(delegate)
             item.setAction_("showAboutPanel:")
             break
+
+    # Add "New Window" Cmd+N to the File menu (index 1)
+    try:
+        file_menu_item = main_menu.itemAtIndex_(1)
+        file_menu = file_menu_item.submenu() if file_menu_item else None
+        if file_menu:
+            new_win = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
+                "New Window", "showAbout:", "n"
+            )
+            new_win.setTarget_(delegate)
+            new_win.setAction_("showWindow:")
+            file_menu.insertItem_atIndex_(new_win, 0)
+    except Exception:
+        pass
 
 
 # ── About dialog ─────────────────────────────────────────────────────────────
@@ -1545,15 +1568,17 @@ def main():
             pass
         # Replace the native "About MarkSign" menu item action
         try:
-            _fix_about_menu(window.root)
+            _fix_about_menu(window.root, window)
         except Exception:
             pass
 
     window.root.after(500, _setup_native)
 
-    # Menu bar icon — separate subprocess (pystray needs its own NSApp main thread)
-    subprocess.Popen(_companion("marksign_tray"),
-                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    # Menu bar icon — disabled until v1.0 (set True to re-enable during development)
+    _ENABLE_MENU_BAR = False
+    if _ENABLE_MENU_BAR:
+        subprocess.Popen(_companion("marksign_tray"),
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     # Start IPC server in background thread
     threading.Thread(target=_start_ipc_server, daemon=True).start()
