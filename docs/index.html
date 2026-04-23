@@ -81,7 +81,7 @@
       max-width: 1100px; margin: 0 auto; padding: 0 2.5rem;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      align-items: center;
+      align-items: start;
       gap: 3rem;
     }
     @media (max-width: 720px) {
@@ -327,7 +327,10 @@
         <h1>Convert your documents<em>to Markdown, locally</em></h1>
         <div class="hero-rule"></div>
         <p class="hero-sub">Clean, structured Markdown for your AI agents, notes apps, and repositories.</p>
-        <div class="hero-cta">
+      </div>
+      <div class="hero-shot">
+        <img src="marksign-initial.png" alt="MarkSign app — drop files to convert">
+        <div class="hero-cta" style="margin-top:1.5rem;">
           <button class="btn-dl" onclick="document.getElementById('dl-modal').showModal()">
             <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
               <path d="M7.5 1v8.5M4 7l3.5 3.5L11 7M2 13h11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
@@ -340,9 +343,6 @@
             Right-click the app → <strong style="color:rgba(160,152,144,0.9)">Open</strong> → Open to bypass it.
           </p>
         </div>
-      </div>
-      <div class="hero-shot">
-        <img src="marksign-initial.png" alt="MarkSign app — drop files to convert">
       </div>
     </div>
   </div>
