@@ -1,5 +1,5 @@
 #!/bin/bash
-# MarkSign — build .app + .dmg
+# MarkSign — build .app + .pkg
 # Run from 2026-04-public-app/
 set -e
 
@@ -16,21 +16,17 @@ echo "── Build complete: dist/MarkSign.app ──"
 ls -lh dist/MarkSign.app/Contents/MacOS/
 
 echo ""
-echo "── Creating DMG ──"
-DMG_NAME="MarkSign-0.1.1.dmg"
-rm -f "dist/$DMG_NAME"
+echo "── Creating PKG ──"
+PKG_NAME="MarkSign-0.1.1.pkg"
+rm -f "dist/$PKG_NAME"
 
-create-dmg \
-    --volname "MarkSign" \
-    --window-pos 200 120 \
-    --window-size 540 380 \
-    --icon-size 128 \
-    --icon "MarkSign.app" 160 170 \
-    --app-drop-link 380 170 \
-    --no-internet-enable \
-    "dist/$DMG_NAME" \
-    "dist/MarkSign.app"
+pkgbuild \
+    --component "dist/MarkSign.app" \
+    --install-location /Applications \
+    --identifier pro.faberludens.marksign \
+    --version 0.1.1 \
+    "dist/$PKG_NAME"
 
 echo ""
-echo "✓  Done: dist/$DMG_NAME"
-du -sh "dist/$DMG_NAME"
+echo "✓  Done: dist/$PKG_NAME"
+du -sh "dist/$PKG_NAME"
