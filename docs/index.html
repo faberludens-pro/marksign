@@ -96,8 +96,10 @@
     .hero-brand img { width: 40px; height: 40px; }
     .hero-brand span {
       font-family: var(--serif); font-size: 1.1rem; font-weight: 700; font-style: italic;
-      color: rgba(237,232,225,0.7); letter-spacing: -0.01em;
+      letter-spacing: -0.01em;
     }
+    .hero-brand .wm-mark { color: rgba(237,232,225,0.9); }
+    .hero-brand .wm-sign { color: var(--orange); }
     .hero h1 {
       font-family: var(--serif); font-size: clamp(2rem, 4.5vw, 3.2rem);
       font-weight: 700; line-height: 1.1; letter-spacing: -0.02em;
@@ -320,7 +322,7 @@
       <div class="hero-text">
         <div class="hero-brand">
           <img src="logo.png" alt="MarkSign logo">
-          <span>MarkSign</span>
+          <span><span class="wm-mark">Mark</span><span class="wm-sign">Sign</span></span>
         </div>
         <h1>Convert any document<em>to Markdown</em></h1>
         <div class="hero-rule"></div>
