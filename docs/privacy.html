@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — MarkSign Panel</title>
+  <meta name="description" content="Privacy policy for the MarkSign Panel Chrome extension.">
+
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" href="favicon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #f6f4f1;
+      --rule:      rgba(0, 0, 0, 0.09);
+      --ink:       #111110;
+      --ink-2:     #48443f;
+      --ink-3:     #928d87;
+      --orange:    #e0601a;
+      --orange-bg: rgba(224, 96, 26, 0.07);
+      --orange-bd: rgba(224, 96, 26, 0.22);
+
+      --step-0: clamp(1rem, 1.34vw, 1.25rem);
+
+      --serif: 'Iowan Old Style', 'Apple Garamond', Baskerville,
+               'Baskerville Old Face', 'Hoefler Text', Garamond,
+               'Times New Roman', serif;
+      --sans: 'Manrope', system-ui, sans-serif;
+    }
+
+    html { font-size: var(--step-0); line-height: 1.6; -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--ink); font-family: var(--serif); }
+
+    .wrap { max-width: 780px; margin: 0 auto; padding: 0 1.75rem; }
+
+    /* ── Header ── */
+    header { padding: 1.4rem 0; border-bottom: 1px solid var(--rule); }
+    header .wrap { display: flex; align-items: center; justify-content: space-between; }
+    .site-name {
+      display: flex; align-items: center; gap: 0.7rem;
+      font-family: var(--serif); font-size: 1.2rem; font-weight: 700; font-style: italic;
+      text-decoration: none; color: var(--ink); letter-spacing: -0.01em;
+    }
+    .site-name img { width: 28px; height: 28px; border-radius: 5px; object-fit: cover; }
+    .nav-link {
+      font-family: var(--sans); font-size: 0.85rem; color: var(--ink-2);
+      text-decoration: none;
+    }
+    .nav-link:hover { color: var(--orange); }
+
+    /* ── Content ── */
+    .content {
+      max-width: 640px;
+      margin: 4rem auto;
+      padding: 0 1.75rem;
+    }
+
+    .content h1 {
+      font-family: var(--serif);
+      font-size: clamp(1.8rem, 3vw, 2.4rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin-bottom: 0.4rem;
+    }
+
+    .meta {
+      font-family: var(--sans);
+      font-size: 0.8rem;
+      color: var(--ink-3);
+      margin-bottom: 3rem;
+    }
+
+    .content h2 {
+      font-family: var(--sans);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--orange);
+      margin-top: 2.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .content p {
+      color: var(--ink-2);
+      margin-bottom: 1rem;
+    }
+
+    .content ul {
+      color: var(--ink-2);
+      padding-left: 1.4rem;
+      margin-bottom: 1rem;
+    }
+
+    .content ul li {
+      margin-bottom: 0.4rem;
+    }
+
+    .highlight {
+      background: var(--orange-bg);
+      border: 1px solid var(--orange-bd);
+      border-radius: 6px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .highlight p {
+      font-family: var(--sans);
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--ink);
+      margin: 0;
+    }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--rule);
+      padding: 2rem 0;
+      margin-top: 4rem;
+    }
+    footer .wrap {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--sans);
+      font-size: 0.78rem;
+      color: var(--ink-3);
+    }
+    footer a { color: var(--ink-3); text-decoration: none; }
+    footer a:hover { color: var(--orange); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="wrap">
+      <a class="site-name" href="index.html">
+        <img src="logo.png" alt="MarkSign logo">
+        MarkSign
+      </a>
+      <a class="nav-link" href="index.html">← Back to MarkSign</a>
+    </div>
+  </header>
+
+  <div class="content">
+    <h1>Privacy Policy</h1>
+    <p class="meta">MarkSign Panel Chrome Extension &nbsp;·&nbsp; Last updated: April 2026</p>
+
+    <div class="highlight">
+      <p>MarkSign Panel processes everything on your device. No data is ever sent to any server. No account required.</p>
+    </div>
+
+    <h2>What the extension does</h2>
+    <p>MarkSign Panel is a Chrome extension that converts the content of the webpage you are currently viewing into Markdown format. The conversion happens entirely within your browser using locally bundled libraries (Turndown.js and Mozilla Readability).</p>
+
+    <h2>Data we collect</h2>
+    <p>We collect <strong>no data whatsoever.</strong> Specifically:</p>
+    <ul>
+      <li>We do not read, store, or transmit your browsing history.</li>
+      <li>We do not collect personal information of any kind.</li>
+      <li>We do not use analytics, telemetry, or crash reporting.</li>
+      <li>We do not set cookies or use any form of tracking.</li>
+    </ul>
+
+    <h2>Permissions used</h2>
+    <p>The extension requests the following Chrome permissions:</p>
+    <ul>
+      <li><strong>activeTab</strong> — to read the HTML of the page you choose to convert. This is only triggered when you click "Convert Page". No other pages are accessed.</li>
+      <li><strong>scripting</strong> — to extract the page content. The extracted content is processed locally and never leaves your device.</li>
+      <li><strong>sidePanel</strong> — to display the extension interface in Chrome's side panel.</li>
+    </ul>
+
+    <h2>Third-party services</h2>
+    <p>MarkSign Panel does not connect to any third-party service. All conversion libraries are bundled within the extension and run locally.</p>
+
+    <h2>Children's privacy</h2>
+    <p>This extension does not collect any information from anyone, including children under the age of 13.</p>
+
+    <h2>Changes to this policy</h2>
+    <p>If the extension's data practices ever change, this page will be updated and the "Last updated" date above will reflect that change.</p>
+
+    <h2>Contact</h2>
+    <p>Questions about this privacy policy? Contact us at <a href="mailto:support@faberludens.pro" style="color: var(--orange);">support@faberludens.pro</a>.</p>
+  </div>
+
+  <footer>
+    <div class="wrap">
+      <span>© 2026 Faber-Ludens Pro</span>
+      <a href="index.html">marksign.faberludens.pro</a>
+    </div>
+  </footer>
+
+</body>
+</html>
