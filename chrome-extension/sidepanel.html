@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MarkSign Panel</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <header>
+      <button id="convertBtn" class="button-primary">Convert Page</button>
+    </header>
+
+    <main>
+      <div id="status" class="status-bar hidden"></div>
+      
+      <div class="editor-container">
+        <div class="toolbar">
+          <span class="toolbar-title">Preview</span>
+          <div class="toolbar-actions">
+            <button id="copyBtn" class="button-icon" title="Copy to clipboard" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </button>
+            <button id="downloadBtn" class="button-icon" title="Download Markdown" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            </button>
+          </div>
+        </div>
+        <textarea id="preview" class="preview-area" placeholder="Markdown will appear here..." readonly></textarea>
+      </div>
+    </main>
+
+    <footer>
+      <a href="mailto:support@faberludens.pro?subject=MarkSign%20Issue" class="link-secondary">Report Issue</a>
+      <span class="footer-sep">·</span>
+      <a href="https://faberludens-pro.github.io/marksign/privacy" target="_blank" class="link-secondary">Privacy Policy</a>
+      <span class="footer-sep">·</span>
+      <a href="https://faberludens-pro.github.io/marksign/" target="_blank" class="link-secondary">About</a>
+    </footer>
+  </div>
+
+  <script src="turndown.js"></script>
+  <script src="Readability.js"></script>
+  <script src="sidepanel.js" type="module"></script>
+</body>
+</html>
