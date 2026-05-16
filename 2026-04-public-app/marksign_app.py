@@ -442,7 +442,7 @@ def _create_tray_icon(window: "MarkSignWindow"):
     status_item = status_bar.statusItemWithLength_(NSVariableStatusItemLength)
     btn = status_item.button()
     btn.setImage_(ns_icon)
-    btn.setToolTip_("MarkSign Converter")
+    btn.setToolTip_("MarkSign")
     btn.setHidden_(False)          # critical: button is hidden by default
     status_item.setVisible_(True)  # macOS 10.12+
 
@@ -459,10 +459,10 @@ def _create_tray_icon(window: "MarkSignWindow"):
 
     _item("Convert file",    "openWindow:")
     menu.addItem_(NSMenuItem.separatorItem())
-    _item("About MarkSign Converter",  "showAbout:")
+    _item("About MarkSign",  "showAbout:")
     _item("Help",            "showHelp:")
     menu.addItem_(NSMenuItem.separatorItem())
-    _item("Quit MarkSign Converter",   "quitApp:")
+    _item("Quit MarkSign",   "quitApp:")
 
     status_item.setMenu_(menu)
     return status_item, delegate  # keep alive (GC)
@@ -706,7 +706,7 @@ class MarkSignWindow:
         self._status_label.place(x=12, rely=0.5, anchor="w")
 
         ctk.CTkLabel(
-            sb, text="MarkSign Converter by Faber-Ludens Pro",
+            sb, text="MarkSign by Faber-Ludens Pro",
             font=("SF Pro Text", 10), text_color="#555555",
             fg_color="transparent"
         ).place(relx=0.5, rely=0.5, anchor="center")
@@ -1096,7 +1096,7 @@ class MarkSignWindow:
 def _run_setup():
     """Polished first-run setup: install docling + pre-warm AI models."""
     root = ctk.CTk()
-    root.title("MarkSign Converter — Setup")
+    root.title("MarkSign — Setup")
     W, H = 460, 310
     root.update_idletasks()
     sw = root.winfo_screenwidth()
@@ -1114,7 +1114,7 @@ def _run_setup():
     except Exception:
         pass
 
-    ctk.CTkLabel(root, text="Setting up MarkSign Converter",
+    ctk.CTkLabel(root, text="Setting up MarkSign",
                  font=("SF Pro Text", 18, "bold"), text_color=LABEL,
                  fg_color="transparent").pack(pady=(10, 4))
 
@@ -1177,7 +1177,7 @@ def _setup_done(root, bar, lbl, detail, ok):
     bar.stop()
     if ok:
         _SETUP_FLAG.touch()   # skip setup on all future launches
-        lbl.configure(text="✓  MarkSign Converter is ready", text_color=SYSTEM_GREEN)
+        lbl.configure(text="✓  MarkSign is ready", text_color=SYSTEM_GREEN)
         detail.configure(text="")
         root.after(1500, root.destroy)
     else:
@@ -1312,7 +1312,7 @@ def _install_finder_service():
 def _offer_dmg_cleanup(root: ctk.CTk):
     """If a MarkSign DMG is still mounted, offer to eject it (and trash the file)."""
     import subprocess, plistlib
-    volume = Path("/Volumes/MarkSign Converter")
+    volume = Path("/Volumes/MarkSign")
     if not volume.exists():
         return
 
@@ -1346,7 +1346,7 @@ def _offer_dmg_cleanup(root: ctk.CTk):
     dialog.grab_set()
 
     ctk.CTkLabel(dialog,
-                 text="MarkSign Converter is installed.\nEject the installer disk image?",
+                 text="MarkSign is installed.\nEject the installer disk image?",
                  font=FONT_BODY, text_color=LABEL, fg_color="transparent").pack(pady=(24, 16))
 
     btns = ctk.CTkFrame(dialog, fg_color="transparent")
@@ -1440,7 +1440,7 @@ def _fix_about_menu(root: ctk.CTk, window=None):
 
 def _show_about(root: ctk.CTk):
     dlg = ctk.CTkToplevel(root)
-    dlg.title("About MarkSign Converter")
+    dlg.title("About MarkSign")
     dlg.geometry("360x340")
     dlg.resizable(False, False)
     dlg.configure(fg_color=BG_WINDOW)
@@ -1454,7 +1454,7 @@ def _show_about(root: ctk.CTk):
     except Exception:
         pass
 
-    ctk.CTkLabel(dlg, text="MarkSign Converter", font=("SF Pro Display", 22, "bold"),
+    ctk.CTkLabel(dlg, text="MarkSign", font=("SF Pro Display", 22, "bold"),
                  text_color=LABEL, fg_color="transparent").pack()
     ctk.CTkLabel(dlg, text="Document to Markdown Converter",
                  font=FONT_SMALL, text_color=LABEL_2, fg_color="transparent").pack(pady=(2, 0))
@@ -1488,7 +1488,7 @@ def _show_help(root: ctk.CTk):
         return
     # Fallback: inline dialog
     dlg = ctk.CTkToplevel(root)
-    dlg.title("MarkSign Converter Help")
+    dlg.title("MarkSign Help")
     dlg.geometry("400x300")
     dlg.configure(fg_color=BG_WINDOW)
     dlg.lift(); dlg.focus_force()
@@ -1543,8 +1543,8 @@ def main():
     try:
         from AppKit import NSBundle
         info = NSBundle.mainBundle().infoDictionary()
-        info["CFBundleName"] = "MarkSign Converter"
-        info["CFBundleDisplayName"] = "MarkSign Converter"
+        info["CFBundleName"] = "MarkSign"
+        info["CFBundleDisplayName"] = "MarkSign"
     except Exception:
         pass
 
@@ -1567,7 +1567,7 @@ def main():
             _NSApp.sharedApplication().setApplicationIconImage_(_logo_nsimage(512))
         except Exception:
             pass
-        # Replace the native "About MarkSign Converter" menu item action
+        # Replace the native "About MarkSign" menu item action
         try:
             _fix_about_menu(window.root, window)
         except Exception:

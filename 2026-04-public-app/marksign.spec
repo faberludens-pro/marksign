@@ -235,7 +235,7 @@ coll = COLLECT(
     strip=False,
     upx=False,
     upx_exclude=[],
-    name="MarkSign Converter",
+    name="MarkSign",
 )
 
 
@@ -245,12 +245,12 @@ coll = COLLECT(
 
 app = BUNDLE(
     coll,
-    name="MarkSign Converter.app",
+    name="MarkSign.app",
     icon="MarkSign.icns",
     bundle_identifier="pro.faberludens.marksign",
     info_plist={
-        "CFBundleName": "MarkSign Converter",
-        "CFBundleDisplayName": "MarkSign Converter",
+        "CFBundleName": "MarkSign",
+        "CFBundleDisplayName": "MarkSign",
         "CFBundleVersion": "0.1.2",
         "CFBundleShortVersionString": "0.1.2",
         "NSHighResolutionCapable": True,

@@ -12,24 +12,24 @@ echo "── Installing pyinstaller into venv ──"
 echo "── Building .app ──"
 .venv/bin/pyinstaller marksign.spec --noconfirm --clean
 
-echo "── Build complete: dist/MarkSign Converter.app ──"
-ls -lh "dist/MarkSign Converter.app/Contents/MacOS/"
+echo "── Build complete: dist/MarkSign.app ──"
+ls -lh dist/MarkSign.app/Contents/MacOS/
 
 echo ""
 echo "── Creating DMG ──"
-DMG_NAME="MarkSign-Converter-0.1.2.dmg"
+DMG_NAME="MarkSign-0.1.2.dmg"
 rm -f "dist/$DMG_NAME"
 
 create-dmg \
-    --volname "MarkSign Converter" \
+    --volname "MarkSign" \
     --window-pos 200 120 \
     --window-size 540 380 \
     --icon-size 128 \
-    --icon "MarkSign Converter.app" 160 170 \
+    --icon "MarkSign.app" 160 170 \
     --app-drop-link 380 170 \
     --no-internet-enable \
     "dist/$DMG_NAME" \
-    "dist/MarkSign Converter.app"
+    "dist/MarkSign.app"
 
 echo ""
 echo "✓  Done: dist/$DMG_NAME"
